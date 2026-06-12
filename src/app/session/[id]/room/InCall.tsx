@@ -6,8 +6,9 @@ import {
   useLocalParticipant,
   useRemoteParticipants,
   useRoomContext,
+  useTracks,
 } from "@livekit/components-react";
-import { ConnectionState, ParticipantKind, RoomEvent } from "livekit-client";
+import { ConnectionState, ParticipantKind, RoomEvent, Track } from "livekit-client";
 import { useRouter } from "next/navigation";
 import { PARTICIPANT_LANG_ATTR } from "@/lib/config";
 import { getLanguageByCode } from "@/lib/languages";
@@ -20,6 +21,7 @@ import ChatSidebar from "./ChatSidebar";
 import BreakoutSidebar from "./BreakoutSidebar";
 import ActiveSpeaker from "./ActiveSpeaker";
 import Filmstrip from "./Filmstrip";
+import ScreenShareView from "./ScreenShareView";
 import OrbitTranslationPanel from "./OrbitTranslationPanel";
 import { SpeakerIcon, ChevronDownIcon, GridViewIcon } from "./icons";
 
@@ -109,6 +111,9 @@ export default function InCall({
 
   const langInfo = getLanguageByCode(lang);
 
+  const screenShareTracks = useTracks([Track.Source.ScreenShare]);
+  const hasScreenShare = screenShareTracks.length > 0;
+
   const activeSpeaker = humanRemotes.find(p => p.isSpeaking) || humanRemotes[0] || localParticipant;
 
   return (
@@ -176,13 +181,18 @@ export default function InCall({
           {/* Participant filmstrip across the top */}
           <Filmstrip participants={humanRemotes} myLang={lang} />
           <div className="orbit-stage-center">
-            <ActiveSpeaker participant={activeSpeaker} myLang={lang} />
+            {hasScreenShare ? (
+              <ScreenShareView myLang={lang} />
+            ) : (
+              <ActiveSpeaker participant={activeSpeaker} myLang={lang} />
+            )}
             {/* We hide the self view if we are the only one, since we're the active speaker */}
             {humanRemotes.length > 0 && <SelfView />}
           </div>
           {/* Right Sidebar Panel */}
           {activeSidebar === "participants" && (
             <ParticipantsPanel 
+              localParticipant={localParticipant}
               participants={humanRemotes} 
               myLang={lang} 
               isHost={isHost}

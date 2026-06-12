@@ -9,6 +9,20 @@ export type UserProfile = {
   theme: "light" | "dark";
   default_language: string;
   voice: string;
+  // Audio
+  mic_device_id?: string;
+  speaker_device_id?: string;
+  auto_join_audio?: boolean;
+  noise_suppression?: boolean;
+  // Video
+  cam_device_id?: string;
+  mirror_video?: boolean;
+  camera_off_on_join?: boolean;
+  video_background?: string; // "none" | "blur" | "color-#hex" | "custom-{name}"
+  // Translation
+  show_captions?: boolean;
+  mute_original_audio?: boolean;
+  translate_audio_playback?: boolean;
 };
 
 type UserContextType = {
@@ -55,6 +69,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             theme: "dark",
             default_language: "en",
             voice: "Orus",
+            auto_join_audio: false,
+            noise_suppression: true,
+            mirror_video: true,
+            camera_off_on_join: false,
+            video_background: "none",
+            show_captions: true,
+            mute_original_audio: true,
+            translate_audio_playback: true,
           };
           setProfile(defaultProfile);
           

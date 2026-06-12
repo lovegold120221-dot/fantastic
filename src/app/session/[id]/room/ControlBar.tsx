@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   useLocalParticipant,
   useRoomContext,
 } from "@livekit/components-react";
 import { Track } from "livekit-client";
+import { SpeakerIcon } from "./icons";
 import {
   CamOffIcon,
   CamOnIcon,
@@ -22,6 +24,7 @@ import {
   MoreIcon,
   PollIcon,
   BreakoutRoomsIcon,
+  SettingsIcon,
   CaretUpIcon,
 } from "./icons";
 
@@ -36,7 +39,10 @@ export default function ControlBar({
 }) {
   const { localParticipant, microphoneTrack, cameraTrack } = useLocalParticipant();
   const room = useRoomContext();
+  const router = useRouter();
   const [isLocalRecording, setIsLocalRecording] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [shareWithAudio, setShareWithAudio] = useState(true);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const micOn = !!microphoneTrack && !microphoneTrack.isMuted;
@@ -52,8 +58,26 @@ export default function ControlBar({
   async function toggleCam() {
     await localParticipant.setCameraEnabled(!camOn);
   }
-  async function toggleScreenShare() {
-    await localParticipant.setScreenShareEnabled(!screenShareOn);
+  async function handleShareScreen() {
+    if (screenShareOn) {
+      // Stop sharing immediately
+      await localParticipant.setScreenShareEnabled(false);
+      return;
+    }
+    // Show dialog to choose options
+    setShowShareDialog(true);
+  }
+
+  async function confirmShareScreen() {
+    setShowShareDialog(false);
+    try {
+      await localParticipant.setScreenShareEnabled(true, {
+        audio: shareWithAudio,
+      });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      alert("Failed to start screen share: " + msg);
+    }
   }
   async function toggleRecording() {
     if (isLocalRecording) {
@@ -172,7 +196,7 @@ export default function ControlBar({
         />
         <CtrlButton
           active={screenShareOn}
-          onClick={toggleScreenShare}
+          onClick={handleShareScreen}
           label={screenShareOn ? "Stop Sharing" : "Share Screen"}
           icon={<ShareScreenIcon />}
           dataMobile="primary-share"
@@ -223,6 +247,13 @@ export default function ControlBar({
           dataMobile="overflow"
           hasCaret
         />
+        <CtrlButton
+          active={false}
+          onClick={() => router.push("/settings")}
+          label="Settings"
+          icon={<SettingsIcon />}
+          dataMobile="overflow"
+        />
       </div>
 
       {/* ——— Right: Leave & More ——— */}
@@ -244,6 +275,44 @@ export default function ControlBar({
           dataMobile="more"
         />
       </div>
+
+      {/* ——— Share Screen Dialog ——— */}
+      {showShareDialog && (
+        <div className="share-dialog-overlay" onClick={() => setShowShareDialog(false)}>
+          <div className="share-dialog" onClick={(e) => e.stopPropagation()}>
+            <h3 className="share-dialog-title">Share Screen</h3>
+            <p className="share-dialog-desc">Choose what to share</p>
+            <label className="share-dialog-option">
+              <input
+                type="checkbox"
+                checked={shareWithAudio}
+                onChange={(e) => setShareWithAudio(e.target.checked)}
+              />
+              <span className="share-dialog-option-icon">
+                <SpeakerIcon />
+              </span>
+              <span className="share-dialog-option-text">
+                <strong>Share computer sound</strong>
+                <small>Also transmit system audio</small>
+              </span>
+            </label>
+            <div className="share-dialog-actions">
+              <button
+                className="share-dialog-btn share-dialog-btn-cancel"
+                onClick={() => setShowShareDialog(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="share-dialog-btn share-dialog-btn-confirm"
+                onClick={confirmShareScreen}
+              >
+                Share
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
