@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { EgressClient, EncodedFileOutput, EncodedFileType } from "livekit-server-sdk";
+import { EgressClient, EncodedFileOutput, EncodedFileType, AccessToken } from "livekit-server-sdk";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,12 +20,33 @@ export async function POST(req: NextRequest) {
     const egressClient = new EgressClient(serverUrl, apiKey, apiSecret);
 
     if (action === "start") {
-      const fileOutput = new EncodedFileOutput({
-        fileType: EncodedFileType.MP4,
+      // Bypass EgressClient's output validation bug by hitting Twirp directly
+      const at = new AccessToken(apiKey, apiSecret, { identity: "admin-bot", ttl: 60 });
+      at.addGrant({ roomRecord: true });
+      const jwt = await at.toJwt();
+      
+      const host = serverUrl.replace(/\/$/, "");
+      const res = await fetch(`${host}/twirp/livekit.Egress/StartRoomCompositeEgress`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${jwt}`
+        },
+        body: JSON.stringify({
+          room_name: roomName,
+          file: {
+            file_type: 1 // MP4
+          }
+        })
       });
-      const egress = await egressClient.startRoomCompositeEgress(roomName, fileOutput);
 
-      return NextResponse.json({ success: true, egressId: egress.egressId });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.msg || `Failed to start egress (${res.status})`);
+      }
+
+      const egressData = await res.json();
+      return NextResponse.json({ success: true, egressId: egressData.egress_id });
     } else if (action === "stop") {
       const list = await egressClient.listEgress({ roomName });
       let stoppedCount = 0;
