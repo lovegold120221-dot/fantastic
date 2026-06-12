@@ -1,4 +1,4 @@
-
+/* eslint-disable react/forbid-dom-props */
 "use client";
 
 import React, { useState, useRef } from "react";

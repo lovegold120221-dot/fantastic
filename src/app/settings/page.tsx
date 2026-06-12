@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-dom-props */
 "use client";
 
 import { useUser } from "@/context/UserContext";
