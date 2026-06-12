@@ -380,13 +380,13 @@ function CtrlButton({
   style?: React.CSSProperties;
 }) {
   return (
+    // eslint-disable-next-line
     <button
       className={`ctrl${active ? " ctrl--active" : ""}${muted ? " ctrl--muted" : ""} ${className}`.trim()}
       onClick={onClick}
       title={label}
       aria-label={label}
       data-mobile={dataMobile}
-      // eslint-disable-next-line react/forbid-dom-props
       style={style}
     >
       <span className="ctrl-icon-row">
