@@ -1,5 +1,4 @@
-/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
-/* eslint-disable react-native/no-inline-styles */
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -28,7 +27,7 @@ export default function ParticipantTile({
   const { localParticipant } = useLocalParticipant();
   const [cameraOn, setCameraOn] = useState(false);
   const [micOn, setMicOn] = useState(false);
-  const [modHover, setModHover] = useState(false);
+
   const isSpeaking = useIsSpeaking(participant);
   const { attributes } = useParticipantAttributes({ participant });
   const speakerLang = attributes?.[PARTICIPANT_LANG_ATTR];
@@ -37,7 +36,7 @@ export default function ParticipantTile({
   const handleModerate = async (action: 'kick' | 'mute') => {
     if (!roomName) return;
     try {
-      const payload: any = { action, roomName, identity: participant.identity };
+      const payload: Record<string, string> = { action, roomName, identity: participant.identity };
       if (action === 'mute') {
         const audioPub = Array.from(participant.audioTrackPublications.values()).find(p => p.source === Track.Source.Microphone);
         if (!audioPub || !audioPub.trackSid) {
@@ -150,7 +149,7 @@ export default function ParticipantTile({
           )}
         </div>
         {isHost && (
-          <div className="tile-moderation-controls">
+          <div className="absolute top-2 right-2 flex space-x-2 z-10">
             <button 
               onClick={() => handleRequestVideo()} 
               className="tile-mod-btn"

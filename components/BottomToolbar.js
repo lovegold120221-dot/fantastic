@@ -71,6 +71,7 @@ const BottomToolbar = ({ isDesktop, onButtonClick }) => {
                      <i className="fa-solid fa-user-group text-xl mb-1"></i>
                     <span className='text-sm'>People</span>
                 </button>
+              </div>
 
              {/* Chat */}
               <div className='mb-4'>
@@ -81,6 +82,7 @@ const BottomToolbar = ({ isDesktop, onButtonClick }) => {
                     <i className="fa-solid fa-comment text-xl mb-1"></i>
                     <span className='text-sm'>Chat</span>
                 </button>
+              </div>
 
             {/* Share Screen */}
             <div className='mb-4'>
@@ -88,7 +90,7 @@ const BottomToolbar = ({ isDesktop, onButtonClick }) => {
                     className="flex flex-col items-center w-full p-2 hover:bg-gray-700 rounded-lg transition duration-150"
                     onClick={() => handleButtonClick('Share')}
                 >
-                     <div className='text-green text-xl mb-1'><i class="fa-solid fa-arrow-up"></i></div>
+                     <div className='text-green text-xl mb-1'><i className="fa-solid fa-arrow-up"></i></div>
                     <span className='text-sm'>Share Screen</span>
                 </button>
             </div>
@@ -105,8 +107,8 @@ const BottomToolbar = ({ isDesktop, onButtonClick }) => {
 
              {/* Additional Features */}
               <div className='flex justify-center space-x-4 mt-6 border-t border-gray-700 pt-4'>
-                   <button class="control-btn" title="Polling"><i class="fa-regular fa-circle-dot text-xl"></i><span class='text-sm ml-1'>Poll</span></button>
-                   <button class="control-btn" title="Record"><i class="fa-solid fa-calendar-check text-xl"></i><span class='text-sm ml-1'>Record</span></button>
+                   <button className="control-btn" title="Polling"><i className="fa-regular fa-circle-dot text-xl"></i><span className='text-sm ml-1'>Poll</span></button>
+                   <button className="control-btn" title="Record"><i className="fa-solid fa-calendar-check text-xl"></i><span className='text-sm ml-1'>Record</span></button>
                 </div>
 
         </div >

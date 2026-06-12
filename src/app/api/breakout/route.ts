@@ -49,10 +49,11 @@ export async function POST(req: NextRequest) {
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("Breakout API Error:", error);
+    const message = error instanceof Error ? error.message : "Failed to process breakout request.";
     return NextResponse.json(
-      { error: error.message || "Failed to process breakout request." },
+      { error: message },
       { status: 500 }
     );
   }

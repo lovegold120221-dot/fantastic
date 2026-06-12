@@ -1,4 +1,4 @@
-/* eslint-disable react-native/no-inline-styles */
+
 "use client";
 
 import React, { useState, useRef } from "react";
@@ -350,7 +350,7 @@ function MicButton({
       muted={!micOn}
       hasCaret
       className="mic-btn"
-      /* eslint-disable-next-line react-native/no-inline-styles */
+
       style={{
         '--volume-opacity': isSpeaking ? Math.min(0.8, volume * 2) : 0,
         '--volume-scale': isSpeaking ? 1 + (volume * 0.5) : 1,
@@ -387,7 +387,7 @@ function CtrlButton({
       title={label}
       aria-label={label}
       data-mobile={dataMobile}
-      // eslint-disable-next-line
+
       style={style}
     >
       <span className="ctrl-icon-row">

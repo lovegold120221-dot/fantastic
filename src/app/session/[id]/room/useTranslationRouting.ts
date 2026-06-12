@@ -36,41 +36,29 @@ function parseTranslationTrackName(
 
 /**
  * Subscribes/unsubscribes to audio tracks based on the listener's chosen
- * language. Encodes the routing predicate from *   translationEnabled=true:
- *     - for each remote human participant P:
- *         hearNative = (myLang === 'none' OR P.lang === myLang)
- *         ALWAYS subscribe to mic and screen share audio
- *         If !hearNative AND muteOriginal (which now acts as duckOriginal):
- *           → lower volume of the source track to 15% (ducking)
- *         Else:
- *           → set volume to 100%
  * language and preferences.
  *
  * Behavior matrix:
  *
  *   translationEnabled=false (passthrough):
- *     - all human mic tracks subscribed (hear everyone directly)
+ *     - all human mic + screen share tracks subscribed (hear everyone directly)
  *     - all agent translation tracks unsubscribed
  *
  *   translationEnabled=true:
  *     - for each remote human participant P:
- *         hearNative = (myLang === 'none' OR P.lang === myLang)
- *         subscribe to mic IF hearNative OR !muteOriginal
- *           → hearNative: same language → no filter needed
- *           → !muteOriginal: user wants to hear original + translation
- *         unsubscribe from mic IF !hearNative AND muteOriginal
- *           → user hears only the translated version
+ *         ALWAYS subscribe to mic + screen share audio
+ *         If !hearNative AND muteOriginal: duck volume to 15%
+ *         Else: set volume to 100%
  *     - for the agent:
  *         subscribe to a translation track IF
  *           target_lang === myLang AND
  *           source speaker's lang !== myLang
  *         else unsubscribe
  */
-export function useTranslationRouting(myLang: string, translationEnabled: boolean = true, muteOriginal: boolean = true) {
 export function useTranslationRouting(
   myLang: string,
-  translationEnabled: boolean,
-  muteOriginal: boolean,
+  translationEnabled: boolean = true,
+  muteOriginal: boolean = true,
 ) {
   const room = useRoomContext();
 
@@ -121,19 +109,8 @@ function applyHumanSubscriptions(
   translationEnabled: boolean,
   muteOriginal: boolean,
 ) {
-  if (!translationEnabled) {
-    // Passthrough: subscribe to all human mic tracks.
-    for (const pub of p.audioTrackPublications.values()) {
-      if (pub.source !== Track.Source.Microphone) continue;
-      setSubscribed(pub, true);
-    }
-    return;
-  }
-
-  // Translation is on: subscribe based on language match + muteOriginal.
   const theirLang = p.attributes?.[PARTICIPANT_LANG_ATTR];
   const hearNative = myLang === NATIVE_LANG || theirLang === myLang;
-  const shouldSubscribe = hearNative || !muteOriginal;
 
   for (const pub of p.audioTrackPublications.values()) {
     if (pub.source !== Track.Source.Microphone && pub.source !== Track.Source.ScreenShareAudio) continue;
@@ -153,8 +130,6 @@ function applyHumanSubscriptions(
         }
       }
     }
-    if (pub.source !== Track.Source.Microphone) continue;
-    setSubscribed(pub, shouldSubscribe);
   }
 }
 
