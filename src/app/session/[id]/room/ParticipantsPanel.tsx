@@ -252,14 +252,26 @@ function SelfRow({
         </div>
       </div>
       <div className="pp-self-actions">
-        <button className={`pp-action-btn ${!micOn ? "pp-action-btn--danger" : ""}`} onClick={onToggleMic}>
-          <MicOffIcon /> {micOn ? "Mute" : "Unmute"}
+        <button
+          className={`pp-action-icon ${!micOn ? "pp-action-icon--danger" : ""}`}
+          onClick={onToggleMic}
+          title={micOn ? "Mute" : "Unmute"}
+        >
+          {micOn ? <MicOnIcon /> : <MicOffIcon />}
         </button>
-        <button className={`pp-action-btn ${!camOn ? "pp-action-btn--danger" : ""}`} onClick={onToggleCam}>
-          <CamOffIcon /> {camOn ? "Camera" : "Camera"}
+        <button
+          className={`pp-action-icon ${!camOn ? "pp-action-icon--danger" : ""}`}
+          onClick={onToggleCam}
+          title={camOn ? "Turn off camera" : "Turn on camera"}
+        >
+          {camOn ? <CamOnIcon /> : <CamOffIcon />}
         </button>
-        <button className={`pp-action-btn ${handRaised ? "pp-action-btn--active" : ""}`} onClick={onToggleHand}>
-          <HandRaiseIcon /> {handRaised ? "Lower" : "Raise"}
+        <button
+          className={`pp-action-icon ${handRaised ? "pp-action-icon--active" : ""}`}
+          onClick={onToggleHand}
+          title={handRaised ? "Lower hand" : "Raise hand"}
+        >
+          <HandRaiseIcon />
         </button>
       </div>
     </div>

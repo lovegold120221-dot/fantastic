@@ -1614,41 +1614,39 @@ body {
   padding-left: 46px;
 }
 
-.pp-action-btn {
-  padding: 4px 10px;
-  border-radius: 6px;
+.pp-action-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface-strong);
   color: var(--fg-secondary);
-  font-size: 11px;
-  font-weight: 500;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  transition: background 0.15s;
-  font-family: inherit;
+  transition: all 0.15s;
 }
 
-.pp-action-btn:hover {
+.pp-action-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pp-action-icon:hover {
   background: var(--accent-soft);
   color: var(--fg);
 }
 
-.pp-action-btn--danger {
+.pp-action-icon--danger {
   border-color: var(--warning);
   color: var(--warning);
 }
 
-.pp-action-btn--active {
+.pp-action-icon--active {
   background: var(--accent-soft);
   color: var(--accent);
   border-color: var(--accent);
-}
-
-.pp-action-btn--danger {
-  border-color: var(--warning);
-  color: var(--warning);
 }
 
 /* Participant rows */
@@ -1821,7 +1819,6 @@ body {
 }
 
 .pp-host-btn svg,
-.pp-action-btn svg,
 .pp-more-item svg {
   width: 14px;
   height: 14px;
