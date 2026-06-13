@@ -192,6 +192,29 @@ export function SpeakerOffIcon() {
   );
 }
 
+export function TranslatorSpeakerIcon() {
+  return (
+    <svg {...baseProps}>
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <text x="4.5" y="15" fontSize="8" fontWeight="bold" fill="currentColor" stroke="none" fontFamily="sans-serif">T</text>
+    </svg>
+  );
+}
+
+export function TranslatorSpeakerOffIcon() {
+  return (
+    <svg {...baseProps}>
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+      <line x1="3" y1="3" x2="21" y2="21" />
+      <text x="4.5" y="15" fontSize="8" fontWeight="bold" fill="currentColor" stroke="none" fontFamily="sans-serif">T</text>
+    </svg>
+  );
+}
+
 export function MoreIcon() {
   return (
     <svg {...baseProps}>

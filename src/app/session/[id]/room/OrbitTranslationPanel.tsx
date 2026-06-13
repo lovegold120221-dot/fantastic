@@ -4,6 +4,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { PICKER_LANGUAGES, getLanguageByCode } from "@/lib/languages";
 import { useTextStream, useRemoteParticipants } from "@livekit/components-react";
+import { TranslatorSpeakerIcon, TranslatorSpeakerOffIcon } from "./icons";
 
 const VOICES = [
   { id: "male1", name: "Male 1" },
@@ -20,6 +21,8 @@ export default function OrbitTranslationPanel({
   onLangChange,
   translationEnabled,
   onToggleTranslation,
+  translatorMuted,
+  onToggleTranslator,
   peerLangs,
 }: {
   onClose: () => void;
@@ -27,6 +30,8 @@ export default function OrbitTranslationPanel({
   onLangChange: (lang: string) => void;
   translationEnabled: boolean;
   onToggleTranslation: () => void;
+  translatorMuted: boolean;
+  onToggleTranslator: () => void;
   peerLangs: Map<string, string | undefined>;
 }) {
   const [voice, setVoice] = useState("male1");
@@ -132,12 +137,12 @@ export default function OrbitTranslationPanel({
         </select>
 
         <button
-          className={`otp-radio-toggle ${translationEnabled ? "otp-radio-toggle--on" : ""}`}
-          onClick={onToggleTranslation}
-          title={translationEnabled ? "Stop translation" : "Start translation"}
-          aria-label={translationEnabled ? "Stop translation" : "Start translation"}
+          className="otp-speaker-toggle"
+          onClick={onToggleTranslator}
+          title={translatorMuted ? "Unmute translator" : "Mute translator"}
+          aria-label={translatorMuted ? "Unmute translator" : "Mute translator"}
         >
-          <span className="otp-radio-dot" />
+          {translatorMuted ? <TranslatorSpeakerOffIcon /> : <TranslatorSpeakerIcon />}
         </button>
 
         <button className="sidebar-close" onClick={onClose} aria-label="Close">

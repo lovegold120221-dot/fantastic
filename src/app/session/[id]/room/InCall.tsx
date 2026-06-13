@@ -35,6 +35,7 @@ export default function InCall({
   const remotes = useRemoteParticipants();
   const [lang, setLang] = useState(initialLang);
   const [translationEnabled, setTranslationEnabled] = useState(true);
+  const [translatorMuted, setTranslatorMuted] = useState(false);
   const [activeSidebar, setActiveSidebar] = useState<"participants" | "captions" | "translation" | "chat" | "breakout" | null>("participants");
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [headerCopied, setHeaderCopied] = useState(false);
@@ -131,14 +132,29 @@ export default function InCall({
 
   useTranslationRouting(lang, translationEnabled, true, true);
 
-  // Speaker mute toggle — mutes/unmutes all <audio> elements in the page
-  // (both remote mic tracks and agent translation tracks).
+  // Speaker mute toggle — mutes/unmutes source audio (human mic/screen share).
+  // Agent translator audio tracks are NOT affected — controlled separately.
   useEffect(() => {
     const audios = document.querySelectorAll<HTMLAudioElement>("audio");
     for (const el of audios) {
-      el.muted = speakerMuted;
+      const trackId = el.dataset.lkTrackId;
+      // Only mute human source tracks (non-agent, not translation-named)
+      if (trackId && !trackId.startsWith("tx:")) {
+        el.muted = speakerMuted;
+      }
     }
   }, [speakerMuted]);
+
+  // Translator mute — mutes/unmutes only the agent translation audio tracks.
+  useEffect(() => {
+    const audios = document.querySelectorAll<HTMLAudioElement>("audio");
+    for (const el of audios) {
+      const trackId = el.dataset.lkTrackId;
+      if (trackId && trackId.startsWith("tx:")) {
+        el.muted = translatorMuted;
+      }
+    }
+  }, [translatorMuted]);
 
   const humanRemotes = useMemo(
     () => remotes.filter((p) => p.kind !== ParticipantKind.AGENT),
@@ -250,6 +266,8 @@ export default function InCall({
               onLangChange={setLang}
               translationEnabled={translationEnabled}
               onToggleTranslation={() => setTranslationEnabled((v) => !v)}
+              translatorMuted={translatorMuted}
+              onToggleTranslator={() => setTranslatorMuted((v) => !v)}
               peerLangs={peerLangs}
             />
           )}

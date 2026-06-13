@@ -1439,6 +1439,35 @@ body {
   border-color: var(--fg-tertiary);
 }
 
+.otp-speaker-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.otp-speaker-toggle:hover {
+  background: var(--accent-soft);
+}
+
+.otp-speaker-toggle[aria-label*="Unmute"] {
+  border-color: var(--border);
+  color: var(--fg-ghost);
+}
+
+.otp-speaker-toggle[aria-label*="Unmute"]:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ── Translation transcript area ── */
 
 .otp-transcript-area {
