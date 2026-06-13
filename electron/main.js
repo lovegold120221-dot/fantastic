@@ -9,7 +9,10 @@ const path = require("path");
 const { fork } = require("child_process");
 
 const isDev = !app.isPackaged;
-const PORT = process.env.ELECTRON_PORT || 3456;
+// In dev mode, next dev is already running (started by the concurrently script).
+// Use its port directly instead of starting a second server.
+const DEV_SERVER_PORT = process.env.ELECTRON_DEV_PORT || 3000;
+const PORT = isDev ? DEV_SERVER_PORT : (process.env.ELECTRON_PORT || 3456);
 
 // ── Ollama check (first launch) ──────────────────────────────────────
 const OLLAMA_CHECKED_KEY = "orbit.ollama-checked";
@@ -120,6 +123,12 @@ function showOllamaRecovery(win) {
 let serverProcess = null;
 
 function startServer() {
+  // In dev mode, next dev is already running on DEV_SERVER_PORT.
+  // Don't start a second server — just wait briefly then resolve.
+  if (isDev) {
+    return new Promise((resolve) => setTimeout(resolve, 1500));
+  }
+
   const serverDir = isDev
     ? path.join(__dirname, "..")
     : path.join(process.resourcesPath, "app");
