@@ -23,7 +23,7 @@ import BreakoutSidebar from "./BreakoutSidebar";
 import ScreenShareView from "./ScreenShareView";
 import OrbitTranslationPanel from "./OrbitTranslationPanel";
 import GalleryView from "./GalleryView";
-import { SpeakerIcon, ChevronDownIcon } from "./icons";
+import { SpeakerIcon, ChevronDownIcon, LinkIcon } from "./icons";
 
 export default function InCall({
   initialLang,
@@ -40,6 +40,7 @@ export default function InCall({
   const [muteOriginal, setMuteOriginal] = useState(true);
   const [activeSidebar, setActiveSidebar] = useState<"participants" | "captions" | "translation" | "chat" | "breakout" | null>("participants");
   const [speakerMuted, setSpeakerMuted] = useState(false);
+  const [headerCopied, setHeaderCopied] = useState(false);
   const router = useRouter();
   const isHost = typeof window !== 'undefined' && window.localStorage.getItem("orbitHostRoom") === room.name;
 
@@ -135,6 +136,17 @@ export default function InCall({
   const allParticipants = [localParticipant, ...humanRemotes];
   const captionsOpen = activeSidebar === "captions";
 
+  const shareUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/session/${room.name}`
+    : "";
+
+  async function copyShareLink() {
+    if (!shareUrl) return;
+    await navigator.clipboard.writeText(shareUrl);
+    setHeaderCopied(true);
+    setTimeout(() => setHeaderCopied(false), 2000);
+  }
+
   return (
     <div className="room-shell">
       <div className="room">
@@ -156,7 +168,16 @@ export default function InCall({
             </div>
             
             <div className="orbit-topbar-right">
-              {/* No view modes allowed */}
+              <span className="orbit-room-id">{room.name}</span>
+              <button
+                className="orbit-copy-btn"
+                onClick={copyShareLink}
+                title={headerCopied ? "Copied!" : "Copy meeting link"}
+                aria-label="Copy meeting link"
+              >
+                <LinkIcon />
+                <span>{headerCopied ? "Copied" : "Copy"}</span>
+              </button>
             </div>
           </div>
 

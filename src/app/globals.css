@@ -1153,6 +1153,44 @@ body {
   color: #4ade80;
 }
 
+.orbit-room-id {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--fg-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 3px 10px;
+  border-radius: 6px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orbit-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  color: var(--fg-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.orbit-copy-btn:hover {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.orbit-copy-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
 .orbit-sound-badge {
   display: inline-flex;
   align-items: center;
