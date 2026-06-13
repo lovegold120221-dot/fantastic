@@ -79,12 +79,12 @@ ${text}`;
     if (!response.ok) {
       const errBody = await response.text().catch(() => "");
       console.error(
-        "Gemini API error:",
+        "Eburon API error:",
         response.status,
         errBody.slice(0, 500),
       );
       return NextResponse.json(
-        { error: `Gemini API returned ${response.status}` },
+        { error: `Eburon API returned ${response.status}` },
         { status: 502 },
       );
     }
@@ -93,9 +93,9 @@ ${text}`;
     const translated = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!translated) {
-      console.error("Unexpected Gemini response:", JSON.stringify(data).slice(0, 500));
+      console.error("Unexpected Eburon response:", JSON.stringify(data).slice(0, 500));
       return NextResponse.json(
-        { error: "Gemini returned an empty response" },
+        { error: "Eburon returned an empty response" },
         { status: 502 },
       );
     }

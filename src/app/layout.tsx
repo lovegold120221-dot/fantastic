@@ -13,7 +13,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Orbit Meeting",
-  description: "Real-time meeting translation with Gemini AI — speak any language, hear in yours.",
+  description: "Real-time meeting translation with Eburon AI — speak any language, hear in yours.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

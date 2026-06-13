@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
   // If we got nothing useful, return a clear error
   if (!result.transcription && !result.translation) {
     return NextResponse.json(
-      { error: "Gemini returned an empty response" },
+      { error: "Eburon returned an empty response" },
       { status: 502 },
     );
   }

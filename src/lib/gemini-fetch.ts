@@ -29,7 +29,7 @@ export async function fetchGeminiWithRetry(
       // Retryable 5xx — throw so we catch it below and retry
       const errBody = await response.text().catch(() => "");
       throw new Error(
-        `Gemini returned ${response.status}: ${errBody.slice(0, 200)}`,
+        `Eburon returned ${response.status}: ${errBody.slice(0, 200)}`,
       );
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err));
@@ -42,11 +42,11 @@ export async function fetchGeminiWithRetry(
         INITIAL_DELAY_MS * Math.pow(2, attempt) +
         Math.random() * INITIAL_DELAY_MS * 0.5;
       console.warn(
-        `Gemini fetch attempt ${attempt + 1}/${maxRetries + 1} failed, retrying in ${Math.round(delay)}ms: ${lastError.message}`,
+        `Eburon fetch attempt ${attempt + 1}/${maxRetries + 1} failed, retrying in ${Math.round(delay)}ms: ${lastError.message}`,
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
-  throw lastError ?? new Error("Gemini fetch failed after retries");
+  throw lastError ?? new Error("Eburon fetch failed after retries");
 }
