@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
+// Standalone output is needed for Electron (bundles a Node.js server).
+// Vercel handles its own output, so skip standalone there.
+const isVercel = process.env.VERCEL === "1" || process.env.CI === "true";
+
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: isVercel ? undefined : "standalone",
   serverExternalPackages: ["@livekit/rtc-node", "ws"],
   async headers() {
     return [
