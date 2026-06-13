@@ -177,10 +177,15 @@ class TranslationRouter:
                 # Determine a source name to help the frontend logic.
                 # Use publication source since RemoteAudioTrack has no .source.
                 participant = self._room.remote_participants.get(speaker_identity)
-                pub = participant.track_publications.get(track_sid) if participant else None
+                pub = (
+                    participant.track_publications.get(track_sid)
+                    if participant
+                    else None
+                )
                 source_str = (
                     "screen_share_audio"
-                    if pub is not None and pub.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+                    if pub is not None
+                    and pub.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
                     else "mic"
                 )
 
@@ -223,8 +228,7 @@ class TranslationRouter:
                 # target language wants screen share translation.
                 if is_screen_share:
                     wants_ss = any(
-                        self._wants_screen_share_translation(lid)
-                        for lid in listeners
+                        self._wants_screen_share_translation(lid) for lid in listeners
                     )
                     if not wants_ss:
                         continue
@@ -261,7 +265,7 @@ class TranslationRouter:
         for p in self._room.remote_participants.values():
             lang = (p.attributes or {}).get(PARTICIPANT_LANG_ATTR) or ""
             tracks = self._speaker_tracks.get(p.identity, {})
-            for track_sid, track in tracks.items():
+            for track_sid, _track in tracks.items():
                 if not self._is_track_unmuted(p, track_sid):
                     continue
                 # Get source from the publication, not the track.
