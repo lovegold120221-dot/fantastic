@@ -315,9 +315,7 @@ export default function TranslationPlayground({ voice }: { voice: string }) {
                 </svg>
               )}
             </span>
-            <span className="settings-playground-record-label">
-              {recording ? "Stop Recording" : "Start Recording"}
-            </span>
+            {/* text label removed as requested */}
           </button>
         )}
 

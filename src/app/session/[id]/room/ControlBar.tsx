@@ -168,13 +168,6 @@ export default function ControlBar({
       {/* ——— Center: Features ——— */}
       <div className="control-bar-center">
         <CtrlButton
-          active={false}
-          onClick={() => {}}
-          label="Security"
-          icon={<SecurityIcon />}
-          dataMobile="overflow"
-        />
-        <CtrlButton
           active={activeSidebar === "participants"}
           onClick={() => onToggleSidebar("participants")}
           label="Participants"
@@ -222,13 +215,6 @@ export default function ControlBar({
           hasCaret
         />
         <CtrlButton
-          active={false}
-          onClick={() => {}}
-          label="Polling"
-          icon={<PollIcon />}
-          dataMobile="overflow"
-        />
-        <CtrlButton
           active={isLocalRecording}
           onClick={toggleRecording}
           label="Record"
@@ -241,14 +227,6 @@ export default function ControlBar({
           label="Breakout"
           icon={<BreakoutRoomsIcon />}
           dataMobile="overflow"
-        />
-        <CtrlButton
-          active={false}
-          onClick={() => {}}
-          label="Reactions"
-          icon={<ReactionsIcon />}
-          dataMobile="overflow"
-          hasCaret
         />
         <CtrlButton
           active={speakerMuted}
@@ -393,6 +371,7 @@ function CtrlButton({
         <span className="ctrl-icon">{icon}</span>
         {hasCaret && <span className="ctrl-caret"><CaretUpIcon /></span>}
       </span>
+      <span className="ctrl-label">{label}</span>
     </button>
   );
 }
