@@ -88,11 +88,18 @@ def test_native_only_listener_no_sessions():
 
 
 def test_same_language_pair_no_sessions():
-    """Two German speakers, no other languages → no translation needed."""
+    """Two German speakers → multi-user mode, same-language skip applies."""
     p1 = _fake_participant("p1", "de")
     p2 = _fake_participant("p2", "de")
     router = _router_with([p1, p2])
     assert router._compute_desired_sessions() == set()
+
+
+def test_single_user_always_creates_session():
+    """One user alone → single-user mode, always translate to their target lang."""
+    p1 = _fake_participant("p1", "es")
+    router = _router_with([p1])
+    assert router._compute_desired_sessions() == {("p1", "pub-sid", "es")}
 
 
 def test_two_different_languages_creates_pair():
@@ -179,14 +186,11 @@ def test_single_pair(speaker_lang, listener_lang, expected_session):
 
 
 def test_screen_share_audio_always_translated():
-    """Screen share audio should be translated even when target lang matches
-    the sharer's declared language (the shared content may be in a different
-    language)."""
+    """Screen share audio is always translated into every listener's language."""
     sharer = _fake_screen_share_participant("sharer", "en")
     listener = _fake_participant("listener", "en", mic_muted=True)
     router = _router_with([sharer, listener])
     sessions = router._compute_desired_sessions()
-    # Same declared lang, but screen share audio should still get translated.
     assert ("sharer", "ss-aud-1", "en") in sessions
 
 
@@ -202,10 +206,9 @@ def test_screen_share_audio_to_different_lang():
 
 def test_screen_share_audio_with_mic_mixed():
     """A participant sharing screen with audio AND has an active mic should
-    produce sessions for both tracks. The screen share audio session should
-    exist even when target matches source lang; the mic session should not."""
+    produce sessions for both tracks. Screen share always translated;
+    mic only when target differs from source."""
     sharer = _fake_screen_share_participant("sharer", "en")
-    # Add mic track to the same participant alongside screen share audio
     mic_pub = MagicMock()
     mic_pub.kind = _AUDIO_KIND
     mic_pub.muted = False
@@ -218,7 +221,7 @@ def test_screen_share_audio_with_mic_mixed():
     router = _router_with([sharer, listener])
     sessions = router._compute_desired_sessions()
 
-    # Screen share audio -> translated even to own lang
+    # Screen share audio -> translated even to same lang
     assert ("sharer", "ss-aud-1", "en") in sessions
-    # Mic audio -> NOT translated to own lang (same-language skip)
+    # Mic audio -> NOT translated to same lang (same-language skip)
     assert ("sharer", "mic-1", "en") not in sessions

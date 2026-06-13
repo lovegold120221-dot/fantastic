@@ -208,14 +208,14 @@ class TranslationRouter:
             return set()
 
         speakers = self._active_speakers()
+        # Single user testing alone → always translate to their target language.
+        total_participants = len(self._room.remote_participants)
+        single_user_mode = total_participants == 1
 
         desired: set[SessionKey] = set()
         for speaker_identity, track_sid, source_lang, is_screen_share in speakers:
             for tgt in target_langs:
-                # Screen share audio (e.g. a video playing in a shared tab) may
-                # be in any language regardless of the sharer's declared lang.
-                # Always create translation sessions for it.
-                if not is_screen_share and tgt == source_lang:
+                if not is_screen_share and not single_user_mode and tgt == source_lang:
                     continue
                 desired.add((speaker_identity, track_sid, tgt))
         return desired
