@@ -175,10 +175,16 @@ class TranslationRouter:
                     continue
 
                 # Determine a source name to help the frontend logic.
-                # If it's screen share audio, use "screen_share_audio", else "mic".
+                # source lives on the TrackPublication, not the Track itself.
+                participant = self._room.remote_participants.get(speaker_identity)
+                pub = (
+                    participant.track_publications.get(track_sid)
+                    if participant
+                    else None
+                )
                 source_str = (
                     "screen_share_audio"
-                    if track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+                    if pub and pub.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
                     else "mic"
                 )
 
@@ -241,10 +247,12 @@ class TranslationRouter:
         for p in self._room.remote_participants.values():
             lang = (p.attributes or {}).get(PARTICIPANT_LANG_ATTR) or ""
             tracks = self._speaker_tracks.get(p.identity, {})
-            for track_sid, track in tracks.items():
-                if not self._is_track_unmuted(p, track_sid):
+            for track_sid, _track in tracks.items():
+                pub = p.track_publications.get(track_sid)
+                if pub is None or not self._is_track_unmuted(p, track_sid):
                     continue
-                is_ss = track.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
+                # source lives on the TrackPublication, not the Track itself
+                is_ss = pub.source == rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
                 if is_ss:
                     # Screen share audio: always include. The content language
                     # is independent of the sharer's declared lang attribute.

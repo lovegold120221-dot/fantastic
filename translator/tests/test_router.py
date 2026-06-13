@@ -28,9 +28,9 @@ def _fake_participant(identity: str, lang: str | None, *, mic_muted: bool = Fals
     pub = MagicMock()
     pub.kind = _AUDIO_KIND
     pub.muted = mic_muted
+    pub.source = rtc.TrackSource.SOURCE_MICROPHONE  # source on publication, not track
     pub.track = MagicMock(name="track")
     pub.track.sid = "pub-sid"
-    pub.track.source = rtc.TrackSource.SOURCE_MICROPHONE
     p.track_publications = {"pub-sid": pub}
     return p
 
@@ -43,9 +43,9 @@ def _fake_screen_share_participant(identity: str, lang: str):
     pub = MagicMock()
     pub.kind = _AUDIO_KIND
     pub.muted = False
+    pub.source = rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO  # source on publication
     pub.track = MagicMock(name="screen-audio")
     pub.track.sid = "ss-aud-1"
-    pub.track.source = rtc.TrackSource.SOURCE_SCREENSHARE_AUDIO
     p.track_publications = {"ss-aud-1": pub}
     return p
 
@@ -209,9 +209,9 @@ def test_screen_share_audio_with_mic_mixed():
     mic_pub = MagicMock()
     mic_pub.kind = _AUDIO_KIND
     mic_pub.muted = False
+    mic_pub.source = rtc.TrackSource.SOURCE_MICROPHONE
     mic_pub.track = MagicMock(name="mic")
     mic_pub.track.sid = "mic-1"
-    mic_pub.track.source = rtc.TrackSource.SOURCE_MICROPHONE
     sharer.track_publications["mic-1"] = mic_pub
 
     listener = _fake_participant("listener", "en", mic_muted=True)
