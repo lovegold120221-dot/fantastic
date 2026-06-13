@@ -1429,8 +1429,385 @@ body {
 }
 
 /* ——————————————————————————————————————
-   Participants Panel — self (host) row
+   Participants Panel — role-aware
    —————————————————————————————————————— */
+
+.pp-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.pp-search-icon {
+  color: var(--fg-ghost);
+  flex-shrink: 0;
+  display: flex;
+}
+
+.pp-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--fg);
+  font-family: inherit;
+}
+
+.pp-search-input::placeholder {
+  color: var(--fg-ghost);
+}
+
+/* Tabs */
+.pp-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.pp-tab {
+  flex: 1;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-tertiary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+.pp-tab--active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+
+.pp-tab:hover {
+  color: var(--fg);
+}
+
+/* Host controls */
+.pp-host-controls {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  flex-wrap: wrap;
+}
+
+.pp-host-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--fg-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.pp-host-btn:hover {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.pp-host-btn--active {
+  background: var(--warning-soft);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+/* Self row */
+.pp-self {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.pp-self-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pp-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.pp-self-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pp-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pp-role-tag {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+.pp-self-indicators {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pp-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+}
+
+.pp-indicator--on {
+  color: var(--success);
+}
+
+.pp-indicator--off {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg-ghost);
+}
+
+.pp-indicator svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pp-self-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  padding-left: 46px;
+}
+
+.pp-action-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--fg-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.pp-action-btn:hover {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.pp-action-btn--warning {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.pp-action-btn--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Participant rows */
+.pp-row {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.pp-row--speaking {
+  background: rgba(79, 140, 255, 0.06);
+}
+
+.pp-row-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pp-row-main:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pp-row-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-inset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  flex-shrink: 0;
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.pp-row-avatar--speaking {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(79, 140, 255, 0.35);
+}
+
+.pp-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pp-row-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pp-badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.pp-badge--role {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pp-badge--lang {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg-tertiary);
+}
+
+.pp-row-status {
+  font-size: 11px;
+  color: var(--fg-tertiary);
+  margin-top: 1px;
+}
+
+.pp-row-icons {
+  display: flex;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.pp-icon-dot {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.pp-icon-dot--on {
+  opacity: 1;
+}
+
+.pp-icon-dot--hand {
+  color: var(--warning);
+  opacity: 1;
+}
+
+.pp-icon-dot--screen {
+  color: var(--success);
+  opacity: 1;
+}
+
+.pp-row-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--fg-ghost);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.pp-row-more:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+}
+
+/* More menu */
+.pp-more-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 16px 8px 56px;
+}
+
+.pp-more-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--fg-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.pp-more-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+}
+
+/* Empty state */
+.pp-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--fg-ghost);
+  font-size: 13px;
+}
+
+/* ── Keep old pt-self for backward compat in other contexts ── */
 
 .pt-self-row {
   display: flex;
