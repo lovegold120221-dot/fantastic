@@ -59,7 +59,7 @@ export default function Home() {
   function createSession() {
     setCreating(true);
     const sessionId = crypto.randomUUID();
-    window.localStorage.setItem("orbitHostRoom", sessionId);
+    window.sessionStorage.setItem("orbitHostRoom", sessionId);
     router.push(`/session/${sessionId}`);
   }
 

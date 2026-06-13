@@ -40,7 +40,7 @@ export default function InCall({
   const [headerCopied, setHeaderCopied] = useState(false);
   const [handRaised, setHandRaised] = useState(false);
   const router = useRouter();
-  const isHost = typeof window !== 'undefined' && window.localStorage.getItem("orbitHostRoom") === room.name;
+  const isHost = typeof window !== 'undefined' && window.sessionStorage.getItem("orbitHostRoom") === room.name;
 
   useDataChannel("moderate", (msg) => {
     try {
