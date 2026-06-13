@@ -23,6 +23,8 @@ export default function OrbitTranslationPanel({
   onToggleMuteOriginal,
   captionsOpen,
   onToggleCaptions,
+  translateScreenShare,
+  onToggleTranslateScreenShare,
 }: {
   onClose: () => void;
   myLang: string;
@@ -33,6 +35,8 @@ export default function OrbitTranslationPanel({
   onToggleMuteOriginal: () => void;
   captionsOpen: boolean;
   onToggleCaptions: () => void;
+  translateScreenShare: boolean;
+  onToggleTranslateScreenShare: () => void;
 }) {
   const [voice, setVoice] = useState("orus");
 
@@ -141,6 +145,10 @@ export default function OrbitTranslationPanel({
           <label className="otp-checkbox-label">
             <input type="checkbox" checked={muteOriginal} onChange={onToggleMuteOriginal} />
             <span>Mute original audio: {muteOriginal ? "On" : "Off"}</span>
+          </label>
+          <label className="otp-checkbox-label">
+            <input type="checkbox" checked={translateScreenShare} onChange={onToggleTranslateScreenShare} />
+            <span>Translate shared screen audio</span>
           </label>
         </div>
 

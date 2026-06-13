@@ -203,30 +203,48 @@ class TranslationRouter:
                     self._sessions.pop(key, None)
 
     def _compute_desired_sessions(self) -> set[SessionKey]:
+        # Map of target_lang → set of listener identities that want it
         target_langs = self._listener_target_langs()
         if not target_langs:
             return set()
 
         speakers = self._active_speakers()
-        # Single user testing alone → always translate to their target language.
         total_participants = len(self._room.remote_participants)
         single_user_mode = total_participants == 1
 
         desired: set[SessionKey] = set()
         for speaker_identity, track_sid, source_lang, is_screen_share in speakers:
-            for tgt in target_langs:
+            for tgt, listeners in target_langs.items():
                 if not is_screen_share and not single_user_mode and tgt == source_lang:
                     continue
+                # Screen share: only translate if at least one listener of this
+                # target language wants screen share translation.
+                if is_screen_share:
+                    wants_ss = any(
+                        self._wants_screen_share_translation(lid)
+                        for lid in listeners
+                    )
+                    if not wants_ss:
+                        continue
                 desired.add((speaker_identity, track_sid, tgt))
         return desired
 
-    def _listener_target_langs(self) -> set[str]:
-        """Languages any human listener wants (excluding the native sentinel)."""
-        langs: set[str] = set()
-        for p in self._room.remote_participants.values():
+    def _wants_screen_share_translation(self, identity: str) -> bool:
+        """Check if a listener wants screen share audio translated."""
+        p = self._room.remote_participants.get(identity)
+        if p is None:
+            return True  # default: translate
+        attr = (p.attributes or {}).get("orbit_translate_screenshare")
+        return attr != "false"
+
+    def _listener_target_langs(self) -> dict[str, set[str]]:
+        """Map of target_lang → set of listener identities wanting that language.
+        Excludes the native sentinel."""
+        langs: dict[str, set[str]] = {}
+        for identity, p in self._room.remote_participants.items():
             lang = (p.attributes or {}).get(PARTICIPANT_LANG_ATTR)
             if lang and lang != NATIVE_LANG:
-                langs.add(lang)
+                langs.setdefault(lang, set()).add(identity)
         return langs
 
     def _active_speakers(self) -> list[tuple[str, str, str, bool]]:

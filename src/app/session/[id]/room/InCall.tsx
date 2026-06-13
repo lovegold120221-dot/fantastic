@@ -38,6 +38,7 @@ export default function InCall({
   const [lang, setLang] = useState(initialLang);
   const [translationEnabled, setTranslationEnabled] = useState(true);
   const [muteOriginal, setMuteOriginal] = useState(true);
+  const [translateScreenShare, setTranslateScreenShare] = useState(true);
   const [activeSidebar, setActiveSidebar] = useState<"participants" | "captions" | "translation" | "chat" | "breakout" | null>("participants");
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [headerCopied, setHeaderCopied] = useState(false);
@@ -95,7 +96,10 @@ export default function InCall({
     if (!localParticipant || !room) return;
     const apply = () => {
       if (room.state === ConnectionState.Connected) {
-        localParticipant.setAttributes({ [PARTICIPANT_LANG_ATTR]: lang });
+        localParticipant.setAttributes({
+          [PARTICIPANT_LANG_ATTR]: lang,
+          orbit_translate_screenshare: translateScreenShare ? "true" : "false",
+        });
       }
     };
     apply();
@@ -103,9 +107,9 @@ export default function InCall({
     return () => {
       room.off(RoomEvent.Connected, apply);
     };
-  }, [room, localParticipant, lang]);
+  }, [room, localParticipant, lang, translateScreenShare]);
 
-  useTranslationRouting(lang, translationEnabled, muteOriginal);
+  useTranslationRouting(lang, translationEnabled, muteOriginal, translateScreenShare);
 
   // Speaker mute toggle — mutes/unmutes all <audio> elements in the page
   // (both remote mic tracks and agent translation tracks).
@@ -236,6 +240,8 @@ export default function InCall({
               onToggleMuteOriginal={() => setMuteOriginal((v) => !v)}
               captionsOpen={captionsOpen}
               onToggleCaptions={() => toggleSidebar("captions")}
+              translateScreenShare={translateScreenShare}
+              onToggleTranslateScreenShare={() => setTranslateScreenShare((v) => !v)}
             />
           )}
           {activeSidebar === "chat" && (

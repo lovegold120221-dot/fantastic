@@ -64,6 +64,7 @@ export function useTranslationRouting(
   myLang: string,
   translationEnabled: boolean = true,
   muteOriginal: boolean = true,
+  translateScreenShare: boolean = true,
 ) {
   const room = useRoomContext();
 
@@ -80,9 +81,9 @@ export function useTranslationRouting(
 
       for (const p of remotes) {
         if (p.kind === ParticipantKind.AGENT) {
-          applyAgentSubscriptions(p, myLang, peerLangs, translationEnabled);
+          applyAgentSubscriptions(p, myLang, peerLangs, translationEnabled, translateScreenShare);
         } else {
-          applyHumanSubscriptions(p, myLang, translationEnabled, muteOriginal);
+          applyHumanSubscriptions(p, myLang, translationEnabled, muteOriginal, translateScreenShare);
         }
       }
     };
@@ -105,7 +106,7 @@ export function useTranslationRouting(
         room.off(event, handler);
       }
     };
-  }, [room, myLang, translationEnabled, muteOriginal]);
+  }, [room, myLang, translationEnabled, muteOriginal, translateScreenShare]);
 }
 
 function applyHumanSubscriptions(
@@ -113,6 +114,7 @@ function applyHumanSubscriptions(
   myLang: string,
   translationEnabled: boolean,
   muteOriginal: boolean,
+  translateScreenShare: boolean,
 ) {
   const theirLang = p.attributes?.[PARTICIPANT_LANG_ATTR];
   const hearNative = myLang === NATIVE_LANG || theirLang === myLang;
@@ -131,12 +133,10 @@ function applyHumanSubscriptions(
         if (!translationEnabled || !muteOriginal) {
           audioTrack.setVolume(1.0);
         } else if (isScreenShareAudio) {
-          // Screen share audio: duck to 15% when translation is on AND muteOriginal
-          // is on, because the listener should hear the translated version instead.
-          // If translation isn't producing audio (e.g., no listeners with a different
-          // language exist), the translated track won't exist and this is the only
-          // audio — so duck less aggressively (0.4 instead of 0.15).
-          audioTrack.setVolume(0.4);
+          // Screen share audio: if user disabled screen share translation,
+          // play original at full volume. Otherwise duck to make room for
+          // the translated track.
+          audioTrack.setVolume(translateScreenShare ? 0.4 : 1.0);
         } else if (!hearNative) {
           // Mic audio: duck only when the speaker's language differs from ours.
           audioTrack.setVolume(0.15);
@@ -153,6 +153,7 @@ function applyAgentSubscriptions(
   myLang: string,
   peerLangs: Map<string, string | undefined>,
   translationEnabled: boolean,
+  translateScreenShare: boolean,
 ) {
   for (const pub of agent.audioTrackPublications.values()) {
     const parsed = parseTranslationTrackName(pub.trackName);
@@ -174,10 +175,8 @@ function applyAgentSubscriptions(
     }
 
     if (parsed.trackSource === "screen_share_audio") {
-      // Screen share content (e.g. a video in a different language) doesn't
-      // respect the sharer's declared language. Always translate it when
-      // the user wants this target language.
-      setSubscribed(pub, true);
+      // Only subscribe to translated screen share if the user wants it.
+      setSubscribed(pub, translateScreenShare);
     } else {
       // Mic translation: only subscribe when the speaker's declared language
       // differs from ours — same-language pairs hear each other natively.

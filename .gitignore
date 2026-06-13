@@ -52,3 +52,4 @@ yarn-error.log*
 next-env.d.ts
 android/.idea/
 .playwright-mcp/
+android/app/release.keystore
