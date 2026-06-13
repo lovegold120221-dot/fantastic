@@ -17,7 +17,7 @@ import { useTranslationRouting } from "./useTranslationRouting";
 
 import ControlBar from "./ControlBar";
 import CaptionsSidebar from "./CaptionsSidebar";
-import ParticipantsPanel from "./ParticipantsPanel";
+import ParticipantsSidebar from "./ParticipantsSidebar";
 import ChatSidebar from "./ChatSidebar";
 import BreakoutSidebar from "./BreakoutSidebar";
 import ScreenShareView from "./ScreenShareView";
@@ -128,6 +128,16 @@ export default function InCall({
     return map;
   }, [humanRemotes]);
 
+  // Single source of truth for who is currently speaking.
+  // LiveKit's audio energy detection enforces at most one active speaker.
+  const whoIsSpeakingParticipantId = useMemo<string | null>(() => {
+    if (localParticipant?.isSpeaking) return localParticipant.identity;
+    for (const p of humanRemotes) {
+      if (p.isSpeaking) return p.identity;
+    }
+    return null;
+  }, [localParticipant, humanRemotes]);
+
   const langInfo = getLanguageByCode(lang);
 
   const screenShareTracks = useTracks([Track.Source.ScreenShare]);
@@ -208,12 +218,13 @@ export default function InCall({
           </div>
           {/* Right Sidebar Panel */}
           {activeSidebar === "participants" && (
-            <ParticipantsPanel 
+            <ParticipantsSidebar
               localParticipant={localParticipant}
-              participants={humanRemotes} 
-              myLang={lang} 
+              participants={humanRemotes}
+              myLang={lang}
               isHost={isHost}
               roomName={room.name}
+              whoIsSpeakingParticipantId={whoIsSpeakingParticipantId}
               onClose={() => setActiveSidebar(null)}
             />
           )}

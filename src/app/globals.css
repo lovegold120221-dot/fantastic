@@ -1836,6 +1836,695 @@ body {
   font-size: 13px;
 }
 
+/* ——————————————————————————————————————
+   Participants Sidebar — ps-* (new, replaces pp-*)
+   —————————————————————————————————————— */
+
+/* ── Panel container ──────────────────── */
+
+.ps-panel {
+  overflow-x: hidden;
+}
+
+/* ── Header with view toggle ──────────── */
+
+.ps-header .sidebar-header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ps-view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--fg-ghost);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ps-view-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fg);
+}
+
+.ps-view-btn--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ── Search ────────────────────────────── */
+
+.ps-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.ps-search-icon {
+  color: var(--fg-ghost);
+  flex-shrink: 0;
+  display: flex;
+}
+
+.ps-search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: var(--fg);
+  font-family: inherit;
+}
+
+.ps-search-input::placeholder {
+  color: var(--fg-ghost);
+}
+
+/* ── Tabs ──────────────────────────────── */
+
+.ps-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.ps-tab {
+  flex: 1;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-tertiary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.ps-tab--active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+
+.ps-tab:hover {
+  color: var(--fg);
+}
+
+/* ── Body ──────────────────────────────── */
+
+.ps-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
+}
+
+/* ── Host controls ────────────────────── */
+
+.ps-host-controls {
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.ps-host-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--fg-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.ps-host-btn:hover {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.ps-host-btn--active {
+  background: var(--warning-soft);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+/* ── Current user card ────────────────── */
+
+.ps-self {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background 0.15s;
+}
+
+.ps-self--speaking {
+  background: rgba(79, 140, 255, 0.04);
+}
+
+.ps-self-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ps-self-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+  flex-shrink: 0;
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.ps-self-avatar--speaking {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(79, 140, 255, 0.35);
+}
+
+.ps-self-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ps-self-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ps-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.ps-name--truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ps-role-tag {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(99, 102, 241, 0.12);
+  flex-shrink: 0;
+}
+
+.ps-self-status {
+  font-size: 11px;
+  color: var(--fg-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ps-speaking-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+  animation: ps-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ps-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Self action buttons ──────────────── */
+
+.ps-self-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.ps-action-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--fg-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.ps-action-icon:hover {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+
+.ps-action-icon--warn {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.ps-action-icon--warn:hover {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.ps-action-icon--active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.ps-action-icon svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.ps-self-more {
+  position: relative;
+}
+
+/* ── List view ────────────────────────── */
+
+.ps-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ps-list-row {
+  padding: 6px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background 0.15s;
+  min-width: 0;
+}
+
+.ps-list-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ps-list-row--speaking {
+  background: rgba(79, 140, 255, 0.04);
+}
+
+.ps-list-row-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ps-list-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-inset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  flex-shrink: 0;
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.ps-list-avatar--speaking {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(79, 140, 255, 0.35);
+}
+
+.ps-list-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ps-list-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ps-list-status {
+  font-size: 11px;
+  color: var(--fg-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ps-list-status svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--success);
+}
+
+.ps-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.ps-list-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--fg-ghost);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ps-list-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fg);
+}
+
+.ps-list-action-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ps-list-indicators {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0 2px 46px;
+}
+
+.ps-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  color: var(--fg-secondary);
+}
+
+.ps-indicator--off {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--fg-ghost);
+}
+
+.ps-indicator--raised {
+  color: var(--warning);
+}
+
+.ps-indicator--screen {
+  color: var(--success);
+}
+
+.ps-indicator svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* ── Badges ───────────────────────────── */
+
+.ps-badge {
+  font-size: 9px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ps-badge--host {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ps-badge--lang {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg-tertiary);
+}
+
+/* ── Video / Grid view ────────────────── */
+
+.ps-grid {
+  display: grid;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.ps-video-card {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+
+.ps-video-card--speaking {
+  border-color: var(--accent);
+}
+
+.ps-video-card-menu {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+}
+
+.ps-video-card-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: none;
+  background: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  opacity: 0;
+}
+
+.ps-video-card:hover .ps-video-card-more-btn {
+  opacity: 1;
+}
+
+.ps-video-card-more-btn:hover {
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+
+.ps-video-card-more-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ps-video-card-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ps-video-card-initial {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--fg-secondary);
+  opacity: 0.5;
+}
+
+.ps-video-card-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 8px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ps-video-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ps-video-card-name-row .ps-name {
+  color: #fff;
+  font-size: 12px;
+}
+
+.ps-video-card-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ps-video-card-status svg {
+  width: 11px;
+  height: 11px;
+}
+
+.ps-video-card-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  pointer-events: none;
+  box-shadow: inset 0 0 12px rgba(79, 140, 255, 0.2);
+}
+
+/* ── More menu dropdown ──────────────── */
+
+.ps-more-wrap {
+  position: relative;
+}
+
+.ps-more-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 100;
+  min-width: 180px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  margin-top: 4px;
+}
+
+.ps-more-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s, color 0.1s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.ps-more-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fg);
+}
+
+.ps-more-item--danger {
+  color: var(--error);
+}
+
+.ps-more-item--danger:hover {
+  background: var(--error-soft);
+  color: var(--error);
+}
+
+.ps-more-item-icon {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.ps-more-item-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Empty / status states ────────────── */
+
+.ps-only-you {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 16px;
+  color: var(--fg-ghost);
+  font-size: 13px;
+}
+
+.ps-only-you svg {
+  width: 28px;
+  height: 28px;
+  opacity: 0.4;
+}
+
+.ps-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--fg-ghost);
+  font-size: 13px;
+}
+
 /* ── Keep old pt-self for backward compat in other contexts ── */
 
 .pt-self-row {
