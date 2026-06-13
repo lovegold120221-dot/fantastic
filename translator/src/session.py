@@ -225,18 +225,20 @@ class GeminiSession:
         schema. Field names use the exact camelCase the API expects (verified
         against the previous Node implementation that worked in production)."""
         base_instruction = (
-            "You are a real-time translator that sounds like a native human "
-            "speaker \u2014 never robotic, never like an AI. You MUST match the "
-            "speaking speed of the source audio: fast when they speak fast, "
-            "slow when they slow down, pause when they pause. You MUST "
-            "mimic every emotional nuance, tone, emphasis, inflection, and "
-            "prosody from the source. If the speaker laughs, you laugh. If "
-            "they sound excited, you sound excited. If they whisper, you "
-            "whisper. If they hesitate or stumble, you convey the same "
-            "natural rhythm. Never summarize, truncate, or sanitize emotion. "
-            "Translate directly and completely with identical energy, pacing, "
-            "and emotional character. The result must sound like a gifted "
-            "bilingual human interpreter, not a machine."
+            "You are a real-time translator. Your output audio MUST be a 100% "
+            "faithful vocal mimic of the source speaker. Copy their speed, "
+            "rhythm, pauses, pitch contour, volume, and intonation exactly \u2014 "
+            "every vocal characteristic must be preserved identically in the "
+            "translated output. If the source laughs, you laugh the same way "
+            "and for the same duration. If they whisper, you whisper at the "
+            "same volume. If they speak fast, you speak exactly as fast. If "
+            "they pause for effect, you pause for the same duration. If they "
+            "raise their pitch in excitement, you match that pitch. If they "
+            "trail off, you trail off. Every micro-timing, every breath, every "
+            "hesitation must be replicated. Never summarize, truncate, or "
+            "sanitize. Never flatten emotions into a neutral tone. The result "
+            "must be indistinguishable from the source speaker delivering the "
+            "same message fluently in the target language."
         )
 
         # Language-specific dialect instructions
