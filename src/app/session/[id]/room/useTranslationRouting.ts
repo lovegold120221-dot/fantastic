@@ -119,14 +119,9 @@ function applyHumanSubscriptions(
     if (pub.track && pub.track instanceof Track) {
       const audioTrack = pub.track as Track & { setVolume?: (volume: number) => void };
       if (typeof audioTrack.setVolume === "function") {
-        // Original audio always plays at full volume (normal Zoom flow).
-        // Translation is a separate parallel track. Only mute when user
-        // explicitly enables "Mute original audio" in the panel.
-        if (muteOriginal) {
-          audioTrack.setVolume(0.0);
-        } else {
-          audioTrack.setVolume(1.0);
-        }
+        // "Mute original" ducks source to 15% — still audible behind translation.
+        // OFF = original at 100% alongside translation.
+        audioTrack.setVolume(muteOriginal ? 0.15 : 1.0);
       }
     }
   }

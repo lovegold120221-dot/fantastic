@@ -144,7 +144,7 @@ export default function OrbitTranslationPanel({
           </label>
           <label className="otp-checkbox-label">
             <input type="checkbox" checked={muteOriginal} onChange={onToggleMuteOriginal} />
-            <span>Mute original audio: {muteOriginal ? "On" : "Off"}</span>
+            <span>Duck original audio {muteOriginal ? "15%" : "Off"}</span>
           </label>
           <label className="otp-checkbox-label">
             <input type="checkbox" checked={translateScreenShare} onChange={onToggleTranslateScreenShare} />

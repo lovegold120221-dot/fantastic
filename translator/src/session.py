@@ -230,7 +230,15 @@ class GeminiSession:
                 "systemInstruction": {
                     "parts": [
                         {
-                            "text": "You are a highly responsive real-time translator. You MUST perfectly mimic the speaking speed, pacing, and emotional nuance of the source audio. If the speaker talks very fast, you MUST talk equally fast to maintain a seamless, low-latency translation. Do not summarize; translate directly with the exact same energy and speed."
+                            "text": (
+                                "You are a real-time translator. You MUST mimic the exact speaking "
+                                "speed of the source audio AT ALL TIMES — if the speaker talks "
+                                "fast, you translate equally fast. If the speaker slows down or "
+                                "pauses, you match that rhythm. Preserve every emotional nuance, "
+                                "tone, emphasis, and inflection from the source. Never summarize "
+                                "or truncate. Translate directly and completely with identical "
+                                "energy, pacing, and emotional character."
+                            )
                         }
                     ]
                 },

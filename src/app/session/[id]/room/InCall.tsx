@@ -205,7 +205,11 @@ export default function InCall({
         <main className="room-stage orbit-stage">
           <div className="orbit-stage-center">
             {hasScreenShare ? (
-              <ScreenShareView myLang={lang} />
+              <ScreenShareView
+                myLang={lang}
+                translateScreenShare={translateScreenShare}
+                onToggleTranslateScreenShare={() => setTranslateScreenShare((v) => !v)}
+              />
             ) : (
               <GalleryView remotes={humanRemotes} myLang={lang} isHost={isHost} roomName={room.name} />
             )}

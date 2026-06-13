@@ -15,7 +15,15 @@ import { getLanguageByCode } from "@/lib/languages";
  * a large preview in the stage center with sharer info and translation
  * overlay. Returns null when no screen share is active.
  */
-export default function ScreenShareView({ myLang }: { myLang: string }) {
+export default function ScreenShareView({
+  myLang,
+  translateScreenShare,
+  onToggleTranslateScreenShare,
+}: {
+  myLang: string;
+  translateScreenShare: boolean;
+  onToggleTranslateScreenShare: () => void;
+}) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
@@ -133,9 +141,17 @@ export default function ScreenShareView({ myLang }: { myLang: string }) {
           )}
         </div>
         <div className="screen-share-overlay-bottom">
-          {needsTranslation && (
+          <button
+            className={`screen-share-translate-btn ${translateScreenShare ? "screen-share-translate-btn--on" : ""}`}
+            onClick={onToggleTranslateScreenShare}
+            title={translateScreenShare ? "Translation ON — click to disable" : "Translation OFF — click to enable"}
+          >
+            <span className="ss-translate-icon">{translateScreenShare ? "🔊" : "🔇"}</span>
+            <span>{translateScreenShare ? "Translating" : "Not translating"}</span>
+          </button>
+          {needsTranslation && translateScreenShare && (
             <span className="screen-share-status">
-              Translating to {getLanguageByCode(myLang)?.name || myLang} &middot; Orus
+              → {getLanguageByCode(myLang)?.name || myLang} &middot; Orus
             </span>
           )}
           {langInfo && !isLocal && !needsTranslation && (
