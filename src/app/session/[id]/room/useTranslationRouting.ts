@@ -38,27 +38,20 @@ function parseTranslationTrackName(
  * Subscribes/unsubscribes to audio tracks based on the listener's chosen
  * language and preferences.
  *
- * Behavior matrix:
+ * Normal Zoom audio flow (always on):
+ *   - All human mic + screen share tracks subscribed at full volume.
+ *   - Translation is a parallel pipeline on top — listeners hear both
+ *     the original AND the translated version simultaneously.
  *
- *   translationEnabled=false (passthrough):
- *     - all human mic + screen share tracks subscribed (hear everyone directly)
- *     - all agent translation tracks unsubscribed
+ * Mute original toggle:
+ *   - When ON: original audio silenced (user hears only translation).
+ *   - When OFF: original audio plays at 100% alongside translation.
  *
- *   translationEnabled=true:
- *     - for each remote human participant P:
- *         ALWAYS subscribe to mic + screen share audio
- *         Mic: If !hearNative AND muteOriginal: duck volume to 15%
- *              Else: set volume to 100%
- *         Screen share audio: If muteOriginal: duck volume to 15%
- *                             Else: set volume to 100%
- *     - for the agent:
- *         subscribe to a mic translation track IF
- *           target_lang === myLang AND
- *           source speaker's lang !== myLang
- *         subscribe to a screen_share_audio translation track IF
- *           target_lang === myLang
- *         (screen share content may be in a different language than
- *          the sharer's declared language, so we always translate it)
+ * Translation routing:
+ *   - Agent translation tracks are subscribed when translationEnabled=true,
+ *     the track's target_lang matches myLang, and either:
+ *       - trackSource === "screen_share_audio" AND translateScreenShare=true
+ *       - trackSource === "mic" AND speaker's lang !== myLang
  */
 export function useTranslationRouting(
   myLang: string,
@@ -116,30 +109,21 @@ function applyHumanSubscriptions(
   muteOriginal: boolean,
   translateScreenShare: boolean,
 ) {
-  const theirLang = p.attributes?.[PARTICIPANT_LANG_ATTR];
-  const hearNative = myLang === NATIVE_LANG || theirLang === myLang;
 
   for (const pub of p.audioTrackPublications.values()) {
     if (pub.source !== Track.Source.Microphone && pub.source !== Track.Source.ScreenShareAudio) continue;
     
-    // Always subscribe to human tracks so we can duck them instead of muting completely
+    // Always subscribe to human tracks (normal Zoom flow).
     setSubscribed(pub, true);
-
-    const isScreenShareAudio = pub.source === Track.Source.ScreenShareAudio;
     
     if (pub.track && pub.track instanceof Track) {
       const audioTrack = pub.track as Track & { setVolume?: (volume: number) => void };
       if (typeof audioTrack.setVolume === "function") {
-        if (!translationEnabled || !muteOriginal) {
-          audioTrack.setVolume(1.0);
-        } else if (isScreenShareAudio) {
-          // Screen share audio: if user disabled screen share translation,
-          // play original at full volume. Otherwise duck to make room for
-          // the translated track.
-          audioTrack.setVolume(translateScreenShare ? 0.4 : 1.0);
-        } else if (!hearNative) {
-          // Mic audio: duck only when the speaker's language differs from ours.
-          audioTrack.setVolume(0.15);
+        // Original audio always plays at full volume (normal Zoom flow).
+        // Translation is a separate parallel track. Only mute when user
+        // explicitly enables "Mute original audio" in the panel.
+        if (muteOriginal) {
+          audioTrack.setVolume(0.0);
         } else {
           audioTrack.setVolume(1.0);
         }
