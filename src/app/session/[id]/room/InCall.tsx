@@ -226,6 +226,7 @@ export default function InCall({
               roomName={room.name}
               whoIsSpeakingParticipantId={whoIsSpeakingParticipantId}
               onClose={() => setActiveSidebar(null)}
+              onLeave={onLeave}
             />
           )}
           {activeSidebar === "captions" && (

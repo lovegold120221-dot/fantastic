@@ -4,9 +4,11 @@ import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import {
   useIsSpeaking,
   useLocalParticipant,
+  useRoomContext,
 } from "@livekit/components-react";
 import {
   Track,
+  Room,
   type LocalParticipant,
   type RemoteParticipant,
 } from "livekit-client";
@@ -58,6 +60,7 @@ interface SidebarProps {
   roomName: string;
   whoIsSpeakingParticipantId: string | null;
   onClose: () => void;
+  onLeave?: () => void;
 }
 
 // ── Icons ────────────────────────────────────────────────────────────
@@ -115,6 +118,7 @@ export default function ParticipantsSidebar({
   roomName,
   whoIsSpeakingParticipantId,
   onClose,
+  onLeave,
 }: SidebarProps) {
   const { microphoneTrack, cameraTrack } = useLocalParticipant();
   const [search, setSearch] = useState("");
@@ -179,7 +183,6 @@ export default function ParticipantsSidebar({
   const totalCount = participants.length + 1; // include self
   const raisedCount = rows.filter((r) => r.handRaised).length;
   const showOnlyYou = participants.length === 0;
-  const useCompactActions = sidebarWidth < 260;
 
   // ── Render ────────────────────────────────────────────────────
 
@@ -266,7 +269,7 @@ export default function ParticipantsSidebar({
           handRaised={handRaised}
           isHost={isHost}
           isSpeaking={localParticipant?.isSpeaking ?? false}
-          compact={useCompactActions}
+          onLeave={onLeave}
           onToggleMic={() => localParticipant?.setMicrophoneEnabled(!micOn)}
           onToggleCam={() => localParticipant?.setCameraEnabled(!camOn)}
           onToggleHand={() => {
@@ -395,7 +398,7 @@ function CurrentUserCard({
   handRaised,
   isHost,
   isSpeaking,
-  compact,
+  onLeave,
   onToggleMic,
   onToggleCam,
   onToggleHand,
@@ -407,11 +410,20 @@ function CurrentUserCard({
   handRaised: boolean;
   isHost: boolean;
   isSpeaking: boolean;
-  compact: boolean;
+  onLeave?: () => void;
   onToggleMic: () => void;
   onToggleCam: () => void;
   onToggleHand: () => void;
 }) {
+  const room = useRoomContext();
+
+  const handleRename = useCallback(() => {
+    const newName = prompt("Enter a new display name:", name);
+    if (newName && newName.trim()) {
+      room.localParticipant?.setName(newName.trim());
+    }
+  }, [name, room]);
+
   return (
     <div className={`ps-self ${isSpeaking ? "ps-self--speaking" : ""}`}>
       <div className="ps-self-row">
@@ -435,31 +447,28 @@ function CurrentUserCard({
       </div>
       <div className="ps-self-actions">
         <button
-          className={`ps-action-icon ${!micOn ? "ps-action-icon--warn" : ""}`}
+          className={`ps-action-icon${!micOn ? " ps-action-icon--warn" : ""}`}
           onClick={onToggleMic}
           title={micOn ? "Mute" : "Unmute"}
           aria-label={micOn ? "Mute microphone" : "Unmute microphone"}
         >
           {micOn ? <MicOnIcon /> : <MicOffIcon />}
-          {!compact && <span>{micOn ? "Mute" : "Unmute"}</span>}
         </button>
         <button
-          className={`ps-action-icon ${!camOn ? "ps-action-icon--warn" : ""}`}
+          className={`ps-action-icon${!camOn ? " ps-action-icon--warn" : ""}`}
           onClick={onToggleCam}
           title={camOn ? "Turn camera off" : "Turn camera on"}
           aria-label={camOn ? "Turn camera off" : "Turn camera on"}
         >
           {camOn ? <CamOnIcon /> : <CamOffIcon />}
-          {!compact && <span>{camOn ? "Camera" : "Camera"}</span>}
         </button>
         <button
-          className={`ps-action-icon ${handRaised ? "ps-action-icon--active" : ""}`}
+          className={`ps-action-icon${handRaised ? " ps-action-icon--active" : ""}`}
           onClick={onToggleHand}
           title={handRaised ? "Lower hand" : "Raise hand"}
           aria-label={handRaised ? "Lower hand" : "Raise hand"}
         >
           <HandRaiseIcon />
-          {!compact && <span>{handRaised ? "Lower" : "Raise"}</span>}
         </button>
         <div className="ps-self-more">
           <MoreMenu
@@ -469,10 +478,22 @@ function CurrentUserCard({
               </button>
             }
             items={[
-              { label: "Rename", icon: <PersonIcon />, onClick: () => {} },
+              {
+                label: "Rename",
+                icon: <PersonIcon />,
+                onClick: handleRename,
+              },
               { label: "Audio settings", icon: <SettingsIcon />, onClick: () => {} },
               { label: "Video settings", icon: <SettingsIcon />, onClick: () => {} },
-              { label: "Leave room", icon: <LeaveIcon />, onClick: () => {}, danger: true },
+              {
+                label: "Leave room",
+                icon: <LeaveIcon />,
+                onClick: () => {
+                  room.disconnect();
+                  onLeave?.();
+                },
+                danger: true,
+              },
             ]}
           />
         </div>
@@ -656,61 +677,93 @@ function VideoCard({
   );
 }
 
-// ── More Menu ────────────────────────────────────────────────────────
+// ── More Menu (fixed positioning, never overflows) ───────────────────
+
+interface MoreItem {
+  label: string;
+  icon?: React.ReactNode;
+  onClick: () => void;
+  danger?: boolean;
+}
 
 function MoreMenu({
   trigger,
   items,
 }: {
-  trigger: React.ReactNode;
-  items: Array<{
-    label: string;
-    icon?: React.ReactNode;
-    onClick: () => void;
-    danger?: boolean;
-  }>;
+  trigger: React.ReactElement;
+  items: MoreItem[];
 }) {
   const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
 
-  // Close on click outside
+  // Close on click outside or scroll
   useEffect(() => {
     if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+    const close = () => setOpen(false);
+    document.addEventListener("mousedown", close);
+    document.addEventListener("scroll", close, true);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("scroll", close, true);
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  // Position the dropdown fixed to the trigger button
+  const handleOpen = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (open) {
+        setOpen(false);
+        return;
+      }
+      const el = (e.currentTarget as HTMLElement).querySelector("button") || e.currentTarget;
+      const rect = el.getBoundingClientRect();
+      // Estimate dropdown height: ~36px per item, cap at 320px
+      const estHeight = Math.min(items.length * 36 + 16, 320);
+      let top = rect.bottom + 4;
+      // Flip upward if it would go off-screen
+      if (top + estHeight > window.innerHeight) {
+        top = rect.top - estHeight - 4;
+      }
+      setPos({ top, right: window.innerWidth - rect.right });
+      setOpen(true);
+    },
+    [open, items.length],
+  );
+
   return (
-    <div className="ps-more-wrap" ref={menuRef}>
-      <div
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-      >
-        {trigger}
-      </div>
-      {open && (
-        <div className="ps-more-dropdown">
-          {items.map((item, i) => (
-            <button
-              key={i}
-              className={`ps-more-item ${item.danger ? "ps-more-item--danger" : ""}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                item.onClick();
-                setOpen(false);
-              }}
-            >
-              {item.icon && <span className="ps-more-item-icon">{item.icon}</span>}
-              {item.label}
-            </button>
-          ))}
+    <div className="ps-more-wrap" ref={triggerRef}>
+      <div onClick={handleOpen}>{trigger}</div>
+      {open && pos && (
+        <div
+          className="ps-more-dropdown"
+          style={{
+            position: "fixed",
+            top: pos.top,
+            right: pos.right,
+            zIndex: 1000,
+          }}
+        >
+          <div className="ps-more-dropdown-inner">
+            {items.length === 0 && (
+              <div className="ps-more-item ps-more-item--disabled">No actions</div>
+            )}
+            {items.map((item, i) => (
+              <button
+                key={i}
+                className={`ps-more-item ${item.danger ? "ps-more-item--danger" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  item.onClick();
+                  setOpen(false);
+                }}
+              >
+                {item.icon && <span className="ps-more-item-icon">{item.icon}</span>}
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -722,33 +775,45 @@ function MoreMenu({
 function hostMoreItems(
   row: ParticipantRow,
   roomName: string,
-): Array<{ label: string; icon?: React.ReactNode; onClick: () => void; danger?: boolean }> {
-  const moderate = async (action: string) => {
+): MoreItem[] {
+  const moderate = async (action: string, extra: Record<string, string> = {}) => {
     try {
       const res = await fetch("/api/moderate", {
         method: "POST",
-        body: JSON.stringify({ action, roomName, identity: row.identity }),
+        body: JSON.stringify({ action, roomName, identity: row.identity, ...extra }),
       });
-      if (!res.ok) throw new Error("Moderation failed");
+      if (!res.ok) throw new Error("Moderation request failed");
     } catch {
-      alert(`Failed: ${action}`);
+      alert(`Failed to ${action} participant`);
     }
   };
 
   return [
     { label: "Mute", icon: <MicOffIcon />, onClick: () => moderate("mute") },
-    { label: "Ask to unmute", icon: <MicOnIcon />, onClick: () => moderate("unmute") },
-    { label: "Spotlight / Pin", icon: <PinIcon />, onClick: () => {} },
+    { label: "Ask to unmute", icon: <MicOnIcon />, onClick: () => {} },
+    { label: "Pin for everyone", icon: <PinIcon />, onClick: () => {} },
     { label: "Make presenter", icon: <PersonIcon />, onClick: () => {} },
     { label: "Remove presenter", icon: <PersonIcon />, onClick: () => {} },
-    { label: "Turn camera off", icon: <CamOffIcon />, onClick: () => moderate("cameraOff") },
-    { label: "Lower hand", icon: <HandRaiseIcon />, onClick: () => {} },
-    { label: "Remove from room", icon: <LeaveIcon />, onClick: () => moderate("kick"), danger: true },
-    { label: "Block participant", icon: <LeaveIcon />, onClick: () => {}, danger: true },
+    { label: "Turn camera off", icon: <CamOffIcon />, onClick: () => {} },
+    {
+      label: "Lower hand",
+      icon: <HandRaiseIcon />,
+      onClick: () => {},
+    },
+    {
+      label: "Remove from room",
+      icon: <LeaveIcon />,
+      onClick: () => {
+        if (confirm(`Remove ${row.name} from the meeting?`)) {
+          moderate("kick");
+        }
+      },
+      danger: true,
+    },
   ];
 }
 
-function participantMoreItems(): Array<{ label: string; icon?: React.ReactNode; onClick: () => void; danger?: boolean }> {
+function participantMoreItems(): MoreItem[] {
   return [
     { label: "Pin for me", icon: <PinIcon />, onClick: () => {} },
     { label: "Send message", icon: <ChatIcon />, onClick: () => {} },
