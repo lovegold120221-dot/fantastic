@@ -20,10 +20,10 @@ const config: CapacitorConfig = {
   },
   android: {
     buildOptions: {
-      keystorePath: undefined,
-      keystorePassword: undefined,
-      keystoreAlias: undefined,
-      keystoreAliasPassword: undefined,
+      keystorePath: "android/app/release.keystore",
+      keystorePassword: "orbitrelease",
+      keystoreAlias: "orbit",
+      keystoreAliasPassword: "orbitrelease",
     },
   },
   plugins: {
