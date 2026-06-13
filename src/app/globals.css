@@ -1595,8 +1595,8 @@ body {
 }
 
 .pp-self-icon-btn {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1610,8 +1610,8 @@ body {
 }
 
 .pp-self-icon-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 
 .pp-self-icon-btn:hover {

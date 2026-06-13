@@ -223,6 +223,7 @@ export default function InCall({
               isHost={isHost}
               roomName={room.name}
               onClose={() => setActiveSidebar(null)}
+              onToggleChat={() => toggleSidebar("chat")}
             />
           )}
           {activeSidebar === "captions" && (

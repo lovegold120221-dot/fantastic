@@ -18,6 +18,7 @@ import {
   SearchIcon,
   MoreVerticalIcon,
   ScreenShareOnIcon,
+  ChatIcon,
 } from "./icons";
 
 type Tab = "all" | "speaking" | "raised";
@@ -39,6 +40,7 @@ export default function ParticipantsPanel({
   isHost,
   roomName,
   onClose,
+  onToggleChat,
 }: {
   localParticipant: LocalParticipant | undefined;
   participants: RemoteParticipant[];
@@ -46,6 +48,7 @@ export default function ParticipantsPanel({
   isHost: boolean;
   roomName: string;
   onClose: () => void;
+  onToggleChat: () => void;
 }) {
   const { microphoneTrack, cameraTrack } = useLocalParticipant();
   const [search, setSearch] = useState("");
@@ -151,6 +154,7 @@ export default function ParticipantsPanel({
           camOn={camOn}
           handRaised={handRaised}
           isHost={isHost}
+          onToggleChat={onToggleChat}
           onToggleMic={() => localParticipant?.setMicrophoneEnabled(!micOn)}
           onToggleCam={() => localParticipant?.setCameraEnabled(!camOn)}
           onToggleHand={() => {
@@ -194,11 +198,12 @@ export default function ParticipantsPanel({
 
 function SelfRow({
   name, initial, micOn, camOn, handRaised, isHost,
-  onToggleMic, onToggleCam, onToggleHand,
+  onToggleMic, onToggleCam, onToggleHand, onToggleChat,
 }: {
   name: string; initial: string; micOn: boolean; camOn: boolean; handRaised: boolean;
   isHost: boolean;
   onToggleMic: () => void; onToggleCam: () => void; onToggleHand: () => void;
+  onToggleChat: () => void;
 }) {
   return (
     <div className="pp-self">
@@ -229,6 +234,13 @@ function SelfRow({
           title={handRaised ? "Lower hand" : "Raise hand"}
         >
           <HandRaiseIcon />
+        </button>
+        <button
+          className="pp-self-icon-btn"
+          onClick={onToggleChat}
+          title="Chat"
+        >
+          <ChatIcon />
         </button>
       </div>
     </div>

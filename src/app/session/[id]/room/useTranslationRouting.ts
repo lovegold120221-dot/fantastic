@@ -154,13 +154,11 @@ function applyAgentSubscriptions(
     }
 
     if (parsed.trackSource === "screen_share_audio") {
-      // Only subscribe to translated screen share if the user wants it.
       setSubscribed(pub, translateScreenShare);
     } else {
-      // Mic translation: only subscribe when the speaker's declared language
-      // differs from ours — same-language pairs hear each other natively.
-      const speakerLang = peerLangs.get(parsed.sourceIdentity);
-      setSubscribed(pub, speakerLang !== myLang);
+      // Mic translation: subscribe to whatever the agent publishes.
+      // The agent decides which sessions to create (single-user mode, etc.)
+      setSubscribed(pub, true);
     }
   }
 }
