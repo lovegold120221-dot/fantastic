@@ -1,12 +1,6 @@
 # Orbit Meeting — Deploy to Vercel
 # Pushes to main trigger a full Vercel build + production deployment.
-# Requires these secrets in the GitHub repo:
-#   VERCEL_TOKEN        — Vercel API token (from Account → Settings → Tokens)
-#   VERCEL_ORG_ID       — Vercel team ID ("team_xxxx") or personal user ID
-#   VERCEL_PROJECT_ID   — Vercel project ID (from Project → Settings → General)
-#
-# Env vars (SUPABASE, LIVEKIT) are set in Vercel project settings — no need
-# to pass them as GitHub secrets for the build; they come from vercel pull.
+# Env vars (SUPABASE, LIVEKIT) are set in Vercel project settings.
 
 name: Deploy to Vercel
 
@@ -22,6 +16,7 @@ concurrency:
 
 env:
   NODE_VERSION: "22"
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 jobs:
   deploy:
@@ -32,7 +27,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        # version comes from package.json's packageManager field
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -44,26 +38,18 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Link Vercel project
-        run: npx vercel@latest link --yes \
-          --project=${{ secrets.VERCEL_PROJECT_ID }} \
-          --scope=${{ secrets.VERCEL_ORG_ID }} \
-          --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel@latest link --yes --project=${{ secrets.VERCEL_PROJECT_ID }} --scope=${{ secrets.VERCEL_ORG_ID }}
 
       - name: Pull Vercel environment
-        run: npx vercel@latest pull --yes \
-          --environment=production \
-          --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel@latest pull --yes --environment=production
 
       - name: Vercel build
-        run: npx vercel@latest build \
-          --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel@latest build
 
       - name: Deploy to Vercel (Production)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: npx vercel@latest deploy --prebuilt --prod \
-          --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel@latest deploy --prebuilt --prod
 
       - name: Deploy to Vercel (Preview)
         if: github.event_name == 'pull_request'
-        run: npx vercel@latest deploy --prebuilt \
-          --token=${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel@latest deploy --prebuilt
