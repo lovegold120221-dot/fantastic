@@ -1302,28 +1302,31 @@ body {
 }
 
 .pp-mute-all-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--fg-ghost);
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
   margin-left: auto;
+  font-family: inherit;
 }
 
 .pp-mute-all-btn:hover {
   background: var(--accent-soft);
   color: var(--accent);
+  border-color: var(--accent);
 }
 
 .pp-mute-all-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 
 /* Header left/right groups for status + action buttons */

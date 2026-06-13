@@ -122,6 +122,7 @@ export default function ParticipantsPanel({
             catch { alert("Failed to mute all"); }
           }} title="Mute all participants">
             <MicOffIcon />
+            <span>Mute All</span>
           </button>
         )}
         <button className="sidebar-close" onClick={onClose} aria-label="Close">
@@ -149,6 +150,7 @@ export default function ParticipantsPanel({
           micOn={micOn}
           camOn={camOn}
           handRaised={handRaised}
+          isHost={isHost}
           onToggleMic={() => localParticipant?.setMicrophoneEnabled(!micOn)}
           onToggleCam={() => localParticipant?.setCameraEnabled(!camOn)}
           onToggleHand={() => {
@@ -191,10 +193,11 @@ export default function ParticipantsPanel({
 // ── Self Row ──────────────────────────────────────────────────────────
 
 function SelfRow({
-  name, initial, micOn, camOn, handRaised,
+  name, initial, micOn, camOn, handRaised, isHost,
   onToggleMic, onToggleCam, onToggleHand,
 }: {
   name: string; initial: string; micOn: boolean; camOn: boolean; handRaised: boolean;
+  isHost: boolean;
   onToggleMic: () => void; onToggleCam: () => void; onToggleHand: () => void;
 }) {
   return (
@@ -204,6 +207,7 @@ function SelfRow({
         <div className="pp-self-info">
           <span className="pp-name">{name}</span>
           <span className="pp-role-tag">You</span>
+          {isHost && <span className="pp-badge pp-badge--role">Host</span>}
         </div>
         <button
           className={`pp-self-icon-btn ${!micOn ? "pp-self-icon-btn--off" : ""}`}
