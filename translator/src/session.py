@@ -161,13 +161,13 @@ class GeminiSession:
                     >= GEMINI_MAX_FAILURES_BEFORE_LONG_BACKOFF
                 ):
                     logger.error(
-                        "Gemini session %s -> %s failed %d times; will keep retrying with long backoff",
+                        "Eburon session %s -> %s failed %d times; will keep retrying with long backoff",
                         self._speaker_identity,
                         self._target_lang,
                         self._consecutive_failures,
                     )
                 logger.warning(
-                    "Gemini session error (%s -> %s) attempt #%d: %s; backing off %.2fs",
+                    "Eburon session error (%s -> %s) attempt #%d: %s; backing off %.2fs",
                     self._speaker_identity,
                     self._target_lang,
                     self._consecutive_failures,
@@ -189,24 +189,24 @@ class GeminiSession:
         ) as ws:
             payload = self._build_setup_payload()
             logger.info(
-                "Gemini WS connecting: %s -> %s, model=%s",
+                "Eburon WS connecting: %s -> %s, model=%s",
                 self._speaker_identity,
                 self._target_lang,
                 payload["setup"]["model"],
             )
             await ws.send(json.dumps(payload))
             logger.info(
-                "Gemini WS setup sent: %s -> %s, awaiting setupComplete",
+                "Eburon WS setup sent: %s -> %s, awaiting setupComplete",
                 self._speaker_identity,
                 self._target_lang,
             )
 
             setup_complete = asyncio.Event()
             send_task = asyncio.create_task(
-                self._pump_input(ws, setup_complete), name="gemini-input"
+                self._pump_input(ws, setup_complete), name="eburon-input"
             )
             recv_task = asyncio.create_task(
-                self._pump_output(ws, setup_complete), name="gemini-output"
+                self._pump_output(ws, setup_complete), name="eburon-output"
             )
 
             done, pending = await asyncio.wait(
@@ -275,7 +275,7 @@ class GeminiSession:
             sent += 1
             if sent in (1, 50) or sent % 500 == 0:
                 logger.info(
-                    "gemini <- %s frames=%d (%s mic in)",
+                    "eburon <- %s frames=%d (%s mic in)",
                     self._target_lang,
                     sent,
                     self._speaker_identity,
@@ -301,7 +301,7 @@ class GeminiSession:
 
             if msg.get("setupComplete") is not None:
                 logger.info(
-                    "Gemini setup complete: %s -> %s",
+                    "Eburon setup complete: %s -> %s",
                     self._speaker_identity,
                     self._target_lang,
                 )
@@ -314,7 +314,7 @@ class GeminiSession:
                 # Log unrecognized message types once per session for debugging
                 if not _first_content_seen:
                     logger.debug(
-                        "Gemini non-serverContent msg (%s -> %s): keys=%s",
+                        "Eburon non-serverContent msg (%s -> %s): keys=%s",
                         self._speaker_identity,
                         self._target_lang,
                         list(msg.keys())[:5],
@@ -324,7 +324,7 @@ class GeminiSession:
             if not _first_content_seen:
                 _first_content_seen = True
                 logger.info(
-                    "Gemini first serverContent (%s -> %s): keys=%s",
+                    "Eburon first serverContent (%s -> %s): keys=%s",
                     self._speaker_identity,
                     self._target_lang,
                     list(sc.keys()),
@@ -341,7 +341,7 @@ class GeminiSession:
                         audio_frames += 1
                         if audio_frames in (1, 10, 100) or audio_frames % 500 == 0:
                             logger.info(
-                                "gemini -> %s frames=%d (%s -> %s)",
+                                "eburon -> %s frames=%d (%s -> %s)",
                                 self._target_lang,
                                 audio_frames,
                                 self._speaker_identity,
@@ -360,7 +360,7 @@ class GeminiSession:
                 text_chunks += 1
                 if text_chunks in (1, 10) or text_chunks % 50 == 0:
                     logger.info(
-                        "gemini transcript chunk #%d for %s -> %s: %r",
+                        "eburon transcript chunk #%d for %s -> %s: %r",
                         text_chunks,
                         self._speaker_identity,
                         self._target_lang,
