@@ -70,6 +70,7 @@ export const SUPPORTED_LANGUAGES: Language[] = [
   { code: "doi", name: "Dogri", flag: "🇮🇳" },
   { code: "dov", name: "Dombe", flag: "🌍" },
   { code: "nl", name: "Dutch", flag: "🇳🇱" },
+  { code: "nl-BE", name: "Flemish (Belgian Dutch)", flag: "🇧🇪" },
   { code: "dyu", name: "Dyula", flag: "🌍" },
   { code: "dz", name: "Dzongkha", flag: "🌍" },
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -269,10 +270,8 @@ export const SUPPORTED_LANGUAGES: Language[] = [
 export const PICKER_LANGUAGES: Language[] = [
   ...SUPPORTED_LANGUAGES,
   NATIVE_OPTION,
-  { code: "nl-BE", name: "Dutch (Belgium)", flag: "🇧🇪" },
-  { code: "be-nl", name: "Belgium - Dutch / Flemish", flag: "🇧🇪" },
-  { code: "be-fr", name: "Belgium - French", flag: "🇧🇪" },
-  { code: "be-de", name: "Belgium - German", flag: "🇧🇪" },
+  { code: "fr-BE", name: "French (Belgium)", flag: "🇧🇪" },
+  { code: "de-BE", name: "German (Belgium)", flag: "🇧🇪" },
 ];
 export function getLanguageByCode(code: string): Language | undefined {
   if (code === NATIVE_OPTION.code) return NATIVE_OPTION;
