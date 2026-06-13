@@ -31,13 +31,56 @@ export default function ChatSidebar({
   const { profile } = useUser();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState("");
+  const [loaded, setLoaded] = useState(false);
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  const seenIds = useRef(new Set<string>());
 
-  // Listen for incoming chat messages
+  // Load chat history from Supabase on mount
+  useEffect(() => {
+    let cancelled = false;
+    async function loadHistory() {
+      const { data, error } = await supabase
+        .from("chat_messages")
+        .select("*")
+        .eq("meeting_id", room.name)
+        .order("created_at", { ascending: true });
+
+      if (cancelled) return;
+      if (error) {
+        console.error("Failed to load chat history:", error);
+        setLoaded(true);
+        return;
+      }
+
+      const history: ChatMessage[] = (data || []).map((row: Record<string, unknown>) => {
+        const msg: ChatMessage = {
+          id: row.id as string,
+          from: (row.sender_name as string) || (row.user_id as string) || "Unknown",
+          fromId: (row.user_id as string) || "",
+          message: row.message as string,
+          timestamp: row.created_at ? new Date(row.created_at as string).getTime() : Date.now(),
+        };
+        seenIds.current.add(msg.id);
+        return msg;
+      });
+
+      setMessages(history);
+      setLoaded(true);
+    }
+
+    loadHistory();
+    return () => { cancelled = true; };
+  }, [room.name]);
+
+  // Listen for incoming real-time chat messages
   useDataChannel(CHAT_TOPIC, useCallback((msg: { payload: Uint8Array }) => {
     try {
       const payload = JSON.parse(new TextDecoder().decode(msg.payload)) as ChatMessage;
-      setMessages((prev) => [...prev, payload]);
+      // Deduplicate against DB-loaded messages
+      if (!seenIds.current.has(payload.id)) {
+        seenIds.current.add(payload.id);
+        setMessages((prev) => [...prev, payload]);
+      }
     } catch {}
   }, []));
 
@@ -49,34 +92,39 @@ export default function ChatSidebar({
 
   const sendMessage = () => {
     if (!text.trim() || !localParticipant) return;
+
+    const senderName = localParticipant.name || localParticipant.identity || "Unknown";
+    const senderId = profile?.id || localParticipant.identity || "unknown";
+
     const msg: ChatMessage = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      from: localParticipant.name || localParticipant.identity || "Unknown",
-      fromId: localParticipant.identity,
+      from: senderName,
+      fromId: senderId,
       message: text.trim(),
       timestamp: Date.now(),
     };
 
+    // 1. Broadcast via LiveKit data channel (all participants see it in real-time)
     const encoder = new TextEncoder();
     localParticipant.publishData(encoder.encode(JSON.stringify(msg)), {
       topic: CHAT_TOPIC,
       reliable: true,
     });
 
-    // Add locally
+    // 2. Add to local state immediately
+    seenIds.current.add(msg.id);
     setMessages((prev) => [...prev, msg]);
     setText("");
 
-    // Save public chat to Supabase
-    if (!privateTo && profile?.id) {
-      supabase.from("chat_messages").insert({
-        meeting_id: room.name,
-        user_id: profile.id,
-        message: msg.message,
-      }).then(({ error }) => {
-        if (error) console.error("Failed to save chat:", error);
-      });
-    }
+    // 3. Persist to Supabase (all public messages, including anonymous)
+    supabase.from("chat_messages").insert({
+      meeting_id: room.name,
+      user_id: senderId,
+      sender_name: senderName,
+      message: msg.message,
+    }).then(({ error }) => {
+      if (error) console.error("Failed to save chat:", error);
+    });
   };
 
   const display = privateTo
@@ -95,7 +143,9 @@ export default function ChatSidebar({
       </div>
 
       <div ref={bodyRef} className="sidebar-body chat-sidebar-body">
-        {display.length === 0 ? (
+        {!loaded ? (
+          <div className="chat-sidebar-empty">Loading messages...</div>
+        ) : display.length === 0 ? (
           <div className="chat-sidebar-empty">No messages yet. Say hi!</div>
         ) : (
           display.map((msg) => (
@@ -121,6 +171,7 @@ export default function ChatSidebar({
             onChange={(e) => setText(e.target.value)}
             placeholder="Type a message..."
             className="chat-sidebar-input"
+            autoFocus
           />
           <button type="submit" disabled={!text.trim()} className="chat-sidebar-btn">Send</button>
         </form>
