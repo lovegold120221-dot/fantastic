@@ -238,7 +238,8 @@ class GeminiSession:
             "hesitation must be replicated. Never summarize, truncate, or "
             "sanitize. Never flatten emotions into a neutral tone. The result "
             "must be indistinguishable from the source speaker delivering the "
-            "same message fluently in the target language."
+            "same message fluently in the target language. "
+            f"IMPORTANT: You MUST translate the input into the language with code '{self._target_lang}'."
         )
 
         # Language-specific dialect instructions
