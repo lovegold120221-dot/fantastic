@@ -77,6 +77,105 @@ flowchart TD
     CheckNative -- No --> Allow2["✅ Allow<br>(Standard translation)"]
 ```
 
+### End-to-End Translation Workflow
+
+Here is the exact pipeline from when a participant speaks to when other participants hear the translation:
+
+**Phase 1 — Room Setup**
+
+1. A participant creates or joins a LiveKit room. The frontend calls `GET /api/token?room=...&identity=...&lang=...` which mints a LiveKit JWT that includes a `RoomAgentDispatch` targeting `"gemini-translator"`. This tells LiveKit Cloud to spin up one Python agent worker per room.
+2. The agent's entrypoint (`translator/src/agent.py`) registers an `@server.rtc_session(agent_name="gemini-translator")` handler. When dispatched, it connects to the room with `AutoSubscribe.AUDIO_ONLY`, sets its agent state to `"listening"`, and starts a `TranslationRouter` instance.
+
+**Phase 2 — Demand Reconciliation**
+
+3. The `TranslationRouter` (`translator/src/router.py`) wires into LiveKit room events: `participant_connected`, `participant_disconnected`, `participant_attributes_changed`, `track_subscribed`, `track_unsubscribed`, `track_muted`, `track_unmuted`. Any of these schedules a debounced reconcile (250 ms debounce via `RECONCILE_DEBOUNCE_SEC`).
+4. On reconcile, `_compute_desired_sessions()` computes the set of `(speaker_identity, track_sid, target_lang)` tuples needed:
+   - Collects target languages from all participants' `lang` attribute (excludes the `NATIVE_LANG` sentinel `"none"`).
+   - Identifies active speakers with unmuted audio tracks (including screen share audio, which is always eligible regardless of the sharer's declared language).
+   - For each `(speaker, track, source_lang)` × target_lang pair, creates a session unless:
+     - The speaker's source language matches the target language (same-language pair hears each other natively — zero Gemini cost), **except** in single-user mode (one remote participant) where translation runs unconditionally.
+     - For screen share audio: only translates if at least one listener has `orbit_translate_screenshare` != `"false"` (defaults to `true`).
+
+**Phase 3 — Session Lifecycle**
+
+5. For each newly desired `(speaker, track_sid, target_lang)`, the router calls `GeminiSession.start()` in `translator/src/session.py`. This:
+   - Publishes a `LocalAudioTrack` into the LiveKit room named `tx:{speaker_identity}:{track_source}:{target_lang}`.
+   - Creates an `AudioSource` (24 kHz mono) to receive Gemini's translated audio.
+   - Spawns a pump loop task (`_run()`) that opens a raw WebSocket to Gemini.
+
+6. The WebSocket connects to:
+   ```
+   wss://generativelanguage.googleapis.com/ws/\
+   google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent\
+   ?key={GEMINI_API_KEY}
+   ```
+   The first message is a setup payload (camelCase, exact v1beta schema):
+   ```json
+   {
+     "setup": {
+       "model": "models/gemini-3.5-live-translate-preview",
+       "outputAudioTranscription": {},
+       "inputAudioTranscription": {},
+       "generationConfig": {
+         "responseModalities": ["AUDIO"],
+         "translationConfig": {
+           "targetLanguageCode": "es",
+           "echoTargetLanguage": true
+         }
+       },
+       "realtimeInputConfig": {
+         "automaticActivityDetection": { "disabled": false }
+       }
+     }
+   }
+   ```
+   The instruction prompt tells Gemini to perform a "faithful vocal mimic" — preserving the source speaker's speed, rhythm, pitch contour, volume, intonation, and emotional delivery exactly in the translated output.
+
+7. Gemini sends a `setupComplete` acknowledgment. Only then does the input pump begin streaming audio.
+
+**Phase 4 — Audio Capture & Streaming**
+
+8. The input pump (`_pump_input`) reads PCM audio from the speaker's RemoteAudioTrack via `rtc.AudioStream` at 16 kHz mono (Gemini's expected input rate). Each chunk is base64-encoded and sent as:
+   ```json
+   {
+     "realtimeInput": {
+       "audio": {
+         "mimeType": "audio/pcm;rate=16000",
+         "data": "<base64 PCM bytes>"
+       }
+     }
+   }
+   ```
+
+9. The output pump (`_pump_output`) reads JSON frames from the WebSocket and handles three types of data:
+   - **Translated audio**: `serverContent.modelTurn.parts[].inlineData.data` → base64-decode → wrap in `rtc.AudioFrame` (24 kHz mono) → push to the `AudioSource` via `capture_frame()`. LiveKit distributes this to all room participants.
+   - **Translated transcription**: `serverContent.outputTranscription.text` (or `serverContent.modelTurn.outputTranscription.text` for some API versions) → publish as an `lk.translation` text-stream with attributes `{ target_lang, source_identity }`.
+   - **Source transcription**: `serverContent.inputTranscription.text` → publish as an `lk.translation` text-stream with `{ target_lang, source_identity, kind: "source" }`.
+   - On `serverContent.turnComplete`, a final empty transcript is published to flush the captions buffer.
+
+**Phase 5 — Frontend Routing**
+
+10. The frontend's `useTranslationRouting.ts` hook listens for room events (participant/track changes) and for each agent-published track:
+    - Parses the track name `tx:{sourceIdentity}:{trackSource}:{targetLang}`.
+    - Blocks subscription if track target_lang != my language, or if `translationEnabled` is `false`.
+    - Blocks subscription if the track is our own voice echo (unless it's `screen_share_audio` — you need to hear your own shared video translation).
+    - Blocks subscription if the speaker already speaks my language natively (hear them directly instead).
+    - Applies `setVolume()` based on mute preferences:
+      - **Mute original ON**: human mic tracks ducked to 15% volume (faintly audible behind translation).
+      - **Mute original OFF**: human mic tracks at 100% alongside translation.
+      - **Translator mute ON**: agent translation tracks set to 0 volume.
+      - **Speaker mute ON**: all `<audio>` elements in the DOM muted.
+
+**Phase 6 — Teardown**
+
+11. When demand for a session disappears (speaker mutes mic, last listener for a target language leaves, or participant disconnects), the router starts a **10-second grace timer** (`SESSION_GRACE_SEC`). If demand returns before the timer expires — e.g. the speaker unmutes within 10 seconds — the timer is cancelled and the session stays warm. This prevents thrashing Gemini connections on brief coughs or mic toggles.
+12. If the timer expires and demand is still absent, the session is torn down: `aclose()` cancels the pump tasks, unpublishes the translation track, and closes the WebSocket.
+13. On explicit participant disconnect, sessions for that speaker are torn down **immediately** (no grace window). The backfill on agent startup populates any pre-existing tracks so late joiners see translation immediately.
+
+**Phase 7 — Recovery**
+
+14. On Gemini WebSocket errors, the session retries with exponential backoff: `[0.5, 1, 2, 4, 8, 16, 30]` seconds with 20% jitter. After 5 consecutive failures, it logs at ERROR level and keeps retrying indefinitely with the longest backoff. If the speaker's track ends (they leave), the pump loop exits cleanly and does not reconnect — the router's reconciliation handles cleanup.
+
 ---
 
 ## Quick start

@@ -100,6 +100,10 @@ The router uses a demand model: a translation session exists iff at least one li
 - **Agent dependency pin:** `yarl<1.24` in `translator/pyproject.toml` — cp310-only wheel issue. Do not remove without testing on all supported Python versions.
 - **`showSaveFilePicker()` requires secure context** (HTTPS or localhost). On HTTP deploys, recording falls back to `<a>` download.
 - **Supabase auth:** the `handle_new_user()` trigger in `supabase/migrations/001_schema.sql` assumes the `profiles` table exists before the first signup. Run migrations before enabling email auth in Supabase dashboard.
+- **Supabase migrations must be idempotent:** Use `DROP POLICY IF EXISTS` / `DROP CONSTRAINT IF EXISTS` before `CREATE` / `ALTER`. Column type changes require dropping dependent RLS policies first, then recreating them with proper CASTs. See `supabase/migrations/003_chat_fk_fix.sql` for the pattern.
+- **Android builds require JDK 21:** Capacitor 8.4.0 requires JDK 21. Set `JAVA_HOME` accordingly (e.g. `export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"` on macOS with Homebrew).
+- **Electron Windows builds:** `electron-builder.yml` must include `"!.next/node_modules/**"` in `extraResources.filter` to avoid 7zip crash on dangling symlinks in `.next/node_modules`. Clean that directory before Windows builds.
+- **Host detection uses `sessionStorage`:** Both `orbitHostRoom` and pre-flight name/lang are stored in `sessionStorage` (not `localStorage`). Keep this consistent so host state doesn't leak across tabs/sessions.
 - **`node_modules` has a global `.pnpm-store/` at repo root** (not just inside `node_modules/`). Never delete the root-level `.pnpm-store/` — it contains the pnpm content-addressable store. Ignored by `.gitignore`.
 - **TASK.md** is the persistent task ledger. Every task gets a `TASK-YYYYMMDD-HHMMSS` record with START + TODO + FINAL REPORT sections. Update it after every significant change.
 
