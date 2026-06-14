@@ -1578,38 +1578,6 @@ body {
    Participants Panel — role-aware
    —————————————————————————————————————— */
 
-.otp-tabs {
-  display: flex;
-  gap: 0;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border-light);
-  background: var(--bg-secondary);
-}
-
-.otp-tab {
-  flex: 1;
-  padding: 12px 0;
-  background: none;
-  border: none;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--fg-tertiary);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
-  font-family: inherit;
-  text-align: center;
-}
-
-.otp-tab--active {
-  color: var(--fg);
-  border-bottom-color: var(--accent);
-}
-
-.otp-tab:hover:not(.otp-tab--active) {
-  color: var(--fg-secondary);
-}
-
 .pp-search-wrap {
   display: flex;
   align-items: center;
