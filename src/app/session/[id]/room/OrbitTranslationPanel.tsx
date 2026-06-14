@@ -30,6 +30,7 @@ export default function OrbitTranslationPanel({
   peerLangs: Map<string, string | undefined>;
 }) {
   const [voice, setVoice] = useState("male1");
+  const [activeTab, setActiveTab] = useState<"transcription" | "translation">("translation");
   const { textStreams } = useTextStream(TRANSLATION_TOPIC);
   const remotes = useRemoteParticipants();
   const bodyRef = useRef<HTMLDivElement | null>(null);
@@ -50,7 +51,8 @@ export default function OrbitTranslationPanel({
     type Entry = {
       key: string;
       sourceIdentity: string;
-      text: string;
+      transcription: string;
+      translation: string;
       sourceLang: string | undefined;
     };
     const out: Entry[] = [];
@@ -59,18 +61,28 @@ export default function OrbitTranslationPanel({
     for (const s of matching) {
       const source = s.streamInfo.attributes?.source_identity ?? s.participantInfo.identity;
       const isFinal = s.streamInfo.attributes?.final === "true";
+      const isSource = s.streamInfo.attributes?.kind === "source";
       const text = s.text.trim();
+
+      const updateEntry = (idx: number, txt: string) => {
+        if (isSource) {
+          out[idx].transcription = `${out[idx].transcription} ${txt}`.trim();
+        } else {
+          out[idx].translation = `${out[idx].translation} ${txt}`.trim();
+        }
+      };
 
       if (isFinal) {
         if (text) {
           const idx = openIdxBySource.get(source);
           if (idx !== undefined) {
-            out[idx].text = `${out[idx].text} ${text}`.trim();
+            updateEntry(idx, text);
           } else {
             out.push({
               key: s.streamInfo.id,
               sourceIdentity: source,
-              text,
+              transcription: isSource ? text : "",
+              translation: isSource ? "" : text,
               sourceLang: peerLangs.get(source),
             });
           }
@@ -83,12 +95,13 @@ export default function OrbitTranslationPanel({
 
       const openIdx = openIdxBySource.get(source);
       if (openIdx !== undefined) {
-        out[openIdx].text = `${out[openIdx].text} ${text}`.trim();
+        updateEntry(openIdx, text);
       } else {
         out.push({
           key: s.streamInfo.id,
           sourceIdentity: source,
-          text,
+          transcription: isSource ? text : "",
+          translation: isSource ? "" : text,
           sourceLang: peerLangs.get(source),
         });
         openIdxBySource.set(source, out.length - 1);
@@ -147,27 +160,54 @@ export default function OrbitTranslationPanel({
         </button>
       </div>
 
+      <div className="otp-tabs">
+        <button
+          className={`otp-tab ${activeTab === "transcription" ? "otp-tab--active" : ""}`}
+          onClick={() => setActiveTab("transcription")}
+        >
+          Transcription
+        </button>
+        <button
+          className={`otp-tab ${activeTab === "translation" ? "otp-tab--active" : ""}`}
+          onClick={() => setActiveTab("translation")}
+        >
+          Translation
+        </button>
+      </div>
+
       <div ref={bodyRef} className="sidebar-body">
         {entries.length === 0 ? (
           <div className="captions-empty">
             No transcriptions yet. Translations will appear here as people speak...
           </div>
         ) : (
-          entries.map((entry) => (
-            <div className="captions-entry" key={entry.key}>
-              <div className="captions-speaker">
-                <span className="captions-speaker-name">
-                  {names.get(entry.sourceIdentity) ?? entry.sourceIdentity}
-                </span>
-                {entry.sourceLang && (
-                  <span className="captions-speaker-lang">
-                    {getLanguageByCode(entry.sourceLang)?.name || entry.sourceLang} → {getLanguageByCode(myLang)?.name || myLang}
+          entries.map((entry) => {
+            const hasContent = activeTab === "transcription" ? !!entry.transcription : !!entry.translation;
+            if (!hasContent) return null;
+
+            return (
+              <div className="captions-entry" key={entry.key}>
+                <div className="captions-speaker">
+                  <span className="captions-speaker-name">
+                    {names.get(entry.sourceIdentity) ?? entry.sourceIdentity}
                   </span>
+                  {entry.sourceLang && (
+                    <span className="captions-speaker-lang">
+                      {getLanguageByCode(entry.sourceLang)?.name || entry.sourceLang} → {getLanguageByCode(myLang)?.name || myLang}
+                    </span>
+                  )}
+                </div>
+                {activeTab === "transcription" && (
+                  <p className="captions-text">{entry.transcription}</p>
+                )}
+                {activeTab === "translation" && (
+                  <p className="captions-text captions-text--translated">
+                    {entry.translation}
+                  </p>
                 )}
               </div>
-              <p className="captions-text">{entry.text}</p>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
