@@ -107,6 +107,43 @@ The router uses a demand model: a translation session exists iff at least one li
 - **`node_modules` has a global `.pnpm-store/` at repo root** (not just inside `node_modules/`). Never delete the root-level `.pnpm-store/` — it contains the pnpm content-addressable store. Ignored by `.gitignore`.
 - **TASK.md** is the persistent task ledger. Every task gets a `TASK-YYYYMMDD-HHMMSS` record with START + TODO + FINAL REPORT sections. Update it after every significant change.
 
+## macOS code signing & notarization
+
+The workflow `.github/workflows/signed-release.yml` builds + signs + notarizes macOS Electron installers.
+
+**Required GitHub secrets** (set in repo → Settings → Secrets and variables → Actions):
+
+| Secret | Description |
+|--------|-------------|
+| `MACOS_CERTIFICATE_P12_BASE64` | base64 of your Developer ID Application `.p12` |
+| `MACOS_CERTIFICATE_PASSWORD` | Password for the `.p12` |
+| `APPLE_ID` | Apple Developer account email |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password (generate at appleid.apple.com) |
+| `APPLE_TEAM_ID` | Team ID from developer.apple.com |
+
+**How to export your cert:**
+```bash
+# List available signing identities
+security find-identity -v -p codesigning
+
+# Export the Developer ID Application cert to p12
+security export -k ~/Library/Keychains/login.keychain \
+  -t identities -f pkcs12 -o developer-id.p12
+
+# Base64 encode for GitHub secret
+base64 -i developer-id.p12 | pbcopy
+```
+
+**How to trigger a signed build:**
+1. Push your release tag (e.g. `git tag v1.2.3 && git push origin v1.2.3`)
+2. Go to GitHub → Actions → **Signed Release Builds** → Run workflow
+3. Enter the tag name → the workflow builds + signs + uploads all platforms
+
+**Local testing without signing:**
+```bash
+CSC_IDENTITY_AUTO_DISCOVERY=false pnpm electron:build:mac
+```
+
 ## Testing
 
 - Agent has unit tests only (`translator/tests/test_router.py`): pure logic, no LiveKit/Gemini connectivity.

@@ -1,9 +1,11 @@
-# Orbit Meeting — Cross-platform Release Builds
-# Builds Windows + Linux Electron installers on native runners.
-# Triggered manually after a release tag is pushed.
-# Uploads artifacts to the existing GitHub release.
+# Orbit Meeting — Cross-platform Release Builds (superseded)
+# This workflow is superseded by signed-release.yml which includes
+# macOS code signing + notarization.
+#
+# Use .github/workflows/signed-release.yml instead.
+# Remove this file once the signed workflow is confirmed working.
 
-name: Release Builds (Win + Linux)
+name: Release Builds (Win + Linux) — DEPRECATED
 
 on:
   workflow_dispatch:
