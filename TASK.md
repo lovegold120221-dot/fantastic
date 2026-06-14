@@ -1259,3 +1259,43 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
 ### Validation
 - `pnpm build` — Checked, Next.js build completed successfully inside the sandbox.
 - Python tests — Ran unit tests with PYTHONPATH matching venv packages, 15/15 tests passed.
+
+## TASK-20260614-135500: Fix missing asyncio import in audio.py
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T13:55:00Z
+- User request: Fix the `name 'asyncio' is not defined` crash in the python agent
+
+### WHAT WAS DONE
+- Added missing `import asyncio` to the top of `translator/src/audio.py`.
+
+### Files changed
+- `translator/src/audio.py` — Added `import asyncio`.
+
+### Validation
+- Python tests — Ran unit tests with PYTHONPATH matching venv packages, 15/15 tests passed.
+- `pnpm build` — Next.js build completed successfully inside the sandbox.
+
+## TASK-20260614-140200: Group transcription and translation display
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T14:02:00Z
+- User request: Update the transcription and translation display to pair/group source and translated lines, prefix source with display name, prefix translation with "Orbit Translator:", and use distinct colors.
+
+### WHAT WAS DONE
+- **Updated `CaptionsSidebar.tsx`**: Changed `Translator:` prefix to `Orbit Translator:`.
+- **Updated `OrbitTranslationPanel.tsx`**: Updated the hook and JSX rendering to group source transcript and translated output into completed source/translation pairs using the same logic as `CaptionsSidebar`.
+- **Wired display prefixes**: Each source transcript line is now prefixed with the speaker's display name, and each translated line is prefixed with `Orbit Translator:`.
+- **Distinct colors**: Added CSS style `.captions-text--translated strong { color: var(--accent); }` in `globals.css` to color the translated prefix, ensuring that the source lines (white/gray) and translated lines (blue) are fully distinct.
+
+### Files changed
+- `src/app/session/[id]/room/CaptionsSidebar.tsx` — Changed translation prefix to `Orbit Translator`.
+- `src/app/session/[id]/room/OrbitTranslationPanel.tsx` — Updated hook and JSX to display grouped/paired lines with proper prefixes.
+- `src/app/globals.css` — Colored the `Orbit Translator` prefix using the accent color for distinction.
+
+### Validation
+- `pnpm build` — Next.js build completed successfully.
+- Python tests — 15/15 tests passed.
+

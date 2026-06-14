@@ -50,7 +50,8 @@ export default function OrbitTranslationPanel({
     type Entry = {
       key: string;
       sourceIdentity: string;
-      text: string;
+      sourceText: string;
+      translatedText: string;
       sourceLang: string | undefined;
     };
     const out: Entry[] = [];
@@ -58,41 +59,36 @@ export default function OrbitTranslationPanel({
 
     for (const s of matching) {
       const source = s.streamInfo.attributes?.source_identity ?? s.participantInfo.identity;
+      const isSource = s.streamInfo.attributes?.kind === "source";
       const isFinal = s.streamInfo.attributes?.final === "true";
       const text = s.text.trim();
 
-      if (isFinal) {
-        if (text) {
-          const idx = openIdxBySource.get(source);
-          if (idx !== undefined) {
-            out[idx].text = `${out[idx].text} ${text}`.trim();
-          } else {
-            out.push({
-              key: s.streamInfo.id,
-              sourceIdentity: source,
-              text,
-              sourceLang: peerLangs.get(source),
-            });
-          }
-        }
-        openIdxBySource.delete(source);
+      if (!text) {
+        if (isFinal) openIdxBySource.delete(source);
         continue;
       }
 
-      if (!text) continue;
-
       const openIdx = openIdxBySource.get(source);
       if (openIdx !== undefined) {
-        out[openIdx].text = `${out[openIdx].text} ${text}`.trim();
+        // Append to open entry
+        if (isSource) {
+          out[openIdx].sourceText = `${out[openIdx].sourceText} ${text}`.trim();
+        } else {
+          out[openIdx].translatedText = `${out[openIdx].translatedText} ${text}`.trim();
+        }
       } else {
+        // New entry
         out.push({
-          key: s.streamInfo.id,
+          key: `entry-${out.length}`,
           sourceIdentity: source,
-          text,
+          sourceText: isSource ? text : "",
+          translatedText: isSource ? "" : text,
           sourceLang: peerLangs.get(source),
         });
         openIdxBySource.set(source, out.length - 1);
       }
+
+      if (isFinal) openIdxBySource.delete(source);
     }
     return out;
   }, [textStreams, myLang, peerLangs]);
@@ -155,17 +151,24 @@ export default function OrbitTranslationPanel({
         ) : (
           entries.map((entry) => (
             <div className="captions-entry" key={entry.key}>
-              <div className="captions-speaker">
-                <span className="captions-speaker-name">
-                  {names.get(entry.sourceIdentity) ?? entry.sourceIdentity}
-                </span>
-                {entry.sourceLang && (
+              {entry.sourceLang && (
+                <div className="captions-speaker">
                   <span className="captions-speaker-lang">
                     {getLanguageByCode(entry.sourceLang)?.name || entry.sourceLang} → {getLanguageByCode(myLang)?.name || myLang}
                   </span>
-                )}
-              </div>
-              <p className="captions-text">{entry.text}</p>
+                </div>
+              )}
+              {entry.sourceText && (
+                <p className="captions-text">
+                  <strong>{names.get(entry.sourceIdentity) ?? entry.sourceIdentity}:</strong>{" "}
+                  {entry.sourceText}
+                </p>
+              )}
+              {entry.translatedText && (
+                <p className="captions-text captions-text--translated">
+                  <strong>Orbit Translator:</strong> {entry.translatedText}
+                </p>
+              )}
             </div>
           ))
         )}
