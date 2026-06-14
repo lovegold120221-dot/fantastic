@@ -68,7 +68,7 @@ export default function RoomClient({ sessionId }: { sessionId: string }) {
       return;
     }
 
-    const isHost = typeof window !== 'undefined' && window.localStorage.getItem("orbitHostRoom") === sessionId;
+    const isHost = typeof window !== 'undefined' && window.sessionStorage.getItem("orbitHostRoom") === sessionId;
     const url = `/api/token?room=${encodeURIComponent(
       sessionId,
     )}&identity=${encodeURIComponent(identity)}&name=${encodeURIComponent(displayName)}${isHost ? '&host=true' : ''}`;

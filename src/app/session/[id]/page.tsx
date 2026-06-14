@@ -63,6 +63,10 @@ export default function PreFlightPage({
   return (
     <div className="page page-centered">
       <div className="entry-panel panel-centered">
+        <div className="auth-brand" style={{ marginBottom: "24px" }}>
+          <div className="auth-logo-bg"><img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" /></div>
+          <span>Orbit Meeting</span>
+        </div>
         <h1 className="display display-lg enter mb-8">
           Join the call
         </h1>

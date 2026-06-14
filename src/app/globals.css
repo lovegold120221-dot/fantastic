@@ -3879,7 +3879,9 @@ html[data-theme="dark"] .auth-logo-bg {
    —————————————————————————————————————— */
 
 .page,
-.entry-shell {
+.entry-shell,
+.auth-shell,
+.settings-shell {
   background: var(--bg);
   color: var(--fg);
 }
@@ -4237,6 +4239,13 @@ html[data-theme="light"] .tile-name {
   align-items: center;
   gap: 12px;
   justify-self: start;
+}
+
+.settings-brand-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: contain;
 }
 
 .settings-brand-mark {

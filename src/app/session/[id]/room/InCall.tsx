@@ -113,6 +113,7 @@ export default function InCall({
   // Push the local lang into participant attributes so the agent + peers see
   // it. setAttributes is silently dropped before the room is connected, so we
   // both fire on `lang` change and re-fire when the connection becomes ready.
+  // Host status is also broadcast so all participants can identify the host.
   useEffect(() => {
     if (!localParticipant || !room) return;
     const apply = () => {
@@ -120,6 +121,7 @@ export default function InCall({
         localParticipant.setAttributes({
           [PARTICIPANT_LANG_ATTR]: lang,
           orbit_hand: handRaised ? "raised" : "",
+          orbit_host: isHost ? "true" : "",
         });
       }
     };
@@ -128,7 +130,7 @@ export default function InCall({
     return () => {
       room.off(RoomEvent.Connected, apply);
     };
-  }, [room, localParticipant, lang, handRaised]);
+  }, [room, localParticipant, lang, handRaised, isHost]);
 
   useTranslationRouting(lang, translationEnabled, true, true);
 

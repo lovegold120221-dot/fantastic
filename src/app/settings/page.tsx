@@ -113,7 +113,7 @@ export default function SettingsPage() {
       {/* Header */}
       <header className="settings-topbar">
         <div className="settings-topbar-left">
-          <span className="settings-brand-mark" aria-hidden />
+          <img src="/icon-eburon.svg" alt="Eburon AI" className="settings-brand-logo" />
           <span className="settings-brand">Orbit Meeting</span>
         </div>
         <div className="settings-topbar-center">
