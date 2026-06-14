@@ -19,6 +19,7 @@ extraResources:
     filter:
       - "**/*"
       - "!**/*.map"
+      - "!.next/node_modules/**"
 
 # Next.js standalone puts server.js + .next at root
 asar: true
