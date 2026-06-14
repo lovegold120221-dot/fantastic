@@ -11,13 +11,10 @@ import TranslationPlayground from "./TranslationPlayground";
 type SettingsTab = "general" | "audio" | "video" | "translation" | "recording";
 
 const VOICES = [
-  { id: "Orus", label: "Orus · Formal" },
-  { id: "Aoede", label: "Aoede · Female" },
-  { id: "Kore", label: "Kore" },
-  { id: "Puck", label: "Puck" },
-  { id: "Charon", label: "Charon" },
-  { id: "Fenrir", label: "Fenrir" },
-  { id: "Leda", label: "Leda" },
+  { id: "male1", label: "Male 1" },
+  { id: "male2", label: "Male 2" },
+  { id: "female1", label: "Female 1" },
+  { id: "female2", label: "Female 2" },
 ];
 
 const TABS: { id: SettingsTab; label: string }[] = [
@@ -39,7 +36,7 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [defaultLanguage, setDefaultLanguage] = useState("en");
-  const [voice, setVoice] = useState("Orus");
+  const [voice, setVoice] = useState("male1");
   const [autoJoinAudio, setAutoJoinAudio] = useState(false);
   const [noiseSuppression, setNoiseSuppression] = useState(true);
   const [mirrorVideo, setMirrorVideo] = useState(true);
