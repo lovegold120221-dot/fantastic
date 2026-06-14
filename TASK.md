@@ -1326,3 +1326,23 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
 - `pnpm build` — Checked, Next.js build completed successfully inside the sandbox.
 - Python tests — Ran unit tests, 15/15 tests passed.
 
+## TASK-20260614-145100: Fix security warnings in signed-release.yml
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T14:51:00Z
+- User request: Fix the security lint warnings about possible hardcoded passwords in `.github/workflows/signed-release.yml`
+
+### WHAT WAS DONE
+- Modified `.github/workflows/signed-release.yml` to remove direct secret interpolation in the inline bash script for `Build + notarize macOS (x64)` and `Build + notarize macOS (arm64)` steps.
+- Securely passed `CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID` via the GHA step `env:` block.
+- Removed prefixes from command calls since `electron-builder` natively reads these variables directly from the environment.
+
+### Files changed
+- `.github/workflows/signed-release.yml` — Removed secret interpolation in bash script run commands; defined them under `env:` block instead.
+
+### Validation
+- `pnpm build` — Completed successfully.
+- Python tests — 15/15 tests passed.
+
+
