@@ -196,14 +196,8 @@ export default function InCall({
           <div className="orbit-topbar-desktop">
             <div className="orbit-topbar-left">
               <span className="orbit-titlebar-title">Orbit Meeting</span>
-              <span className="orbit-sound-badge">
-                <span className="orbit-sound-dot" />
-                Original Sound: Off
-              </span>
-              <ChevronDownIcon />
-              <span className="orbit-subbar-divider orbit-subbar-divider-spaced">·</span>
               <span className="orbit-translation-status orbit-translation-status-text">
-                Translation: {langInfo?.name || lang} &middot; Voice: Orus
+                Translation: {langInfo?.name || lang}
               </span>
             </div>
             

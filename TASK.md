@@ -1091,3 +1091,77 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
   - Build Linux x64 .deb (requires different arch build runner or QEMU)
   - Code-sign Windows + macOS binaries for production distribution
   - Test all artifacts on target platforms
+
+---
+
+## TASK-20260614-080000: Commit fixes and create v0.5.0 release
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T08:00:00Z
+- User request: "ccommit then create all realeases" — commit pending host/chat fixes and build+release v0.5.0 for all platforms
+- Preservation constraints: electron-builder.yml filter added (exclude .next/node_modules), migration 003 rewritten for full idempotency
+- Files/directories inspected: .git, dist-electron/, electron-builder.yml, package.json, supabase/migrations/003_chat_fk_fix.sql, android/
+- Success criteria:
+  - All changes committed and pushed
+  - SQL migration 003 is fully idempotent (DROP before each CREATE, UUID→TEXT casts in policies)
+  - Desktop artifacts built for macOS (DMG+ZIP x64+arm64), Windows (NSIS x64+arm64), Linux (deb+AppImage x64+arm64)
+  - Android debug APK built
+  - GitHub release v0.5.0 created with all artifacts
+
+### WHAT WAS DONE
+
+**1. SQL migration fix** (3 iterations):
+- First attempt failed: `cannot alter type of a column used in a policy definition`
+- Second attempt fixed: dropped all dependent policies before ALTER COLUMN, recreated after
+- Third attempt failed: `operator does not exist: uuid = text` in recreated policy joins
+- Final fix: CAST both sides of comparison in the policy (`meeting_id::text = chat_messages.meeting_id`)
+- Made fully idempotent: DROP POLICY IF EXISTS before every CREATE POLICY in step 6
+
+**2. Host detection fix** (already coded in previous session):
+- RoomClient.tsx: `localStorage.getItem("orbitHostRoom")` → `sessionStorage.getItem("orbitHostRoom")`
+- Consistency with page.tsx which writes to sessionStorage
+
+**3. Desktop builds (electron-builder):**
+- macOS: DMG + ZIP for x64 + arm64 ✅ (194MB / 198MB each)
+- Linux: deb + AppImage for x64 + arm64 ✅ (140MB-202MB each)
+- Windows: NSIS installers (x64 + arm64 + combined) ✅ (141MB-291MB each)
+  - Fixed dangling symlink issue: added `"!.next/node_modules/**"` filter to electron-builder.yml extraResources
+  - Had to clean source .next/node_modules before each build attempt
+
+**4. Android APK:**
+- Failed initially: `invalid source release: 21` — Capacitor 8.4.0 requires JDK 21
+- Installed `openjdk@21` via Homebrew (brew install openjdk@21)
+- Built with JAVA_HOME pointing to JDK 21: `export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"`
+- Debug APK: 4.0MB, BUILD SUCCESSFUL in 10s
+
+**5. GitHub release v0.5.0:**
+- Tag v0.5.0 pushed
+- Release created with 20 artifacts:
+  - macOS: 4 artifacts + 4 blockmaps
+  - Windows: 3 installers + 3 blockmaps
+  - Linux: 4 artifacts
+  - Android: 1 APK
+- URL: https://github.com/lovegold120221-dot/fantastic/releases/tag/v0.5.0
+
+### FINAL REPORT
+- STATUS: COMPLETED
+- End time: 2026-06-14T08:45:00Z
+- Files changed:
+  - `supabase/migrations/003_chat_fk_fix.sql` — Rewritten: DROP policies before ALTER, UUID→TEXT casts in policy joins, fully idempotent
+  - `electron-builder.yml` — Added `"!.next/node_modules/**"` filter to extraResources
+  - `package.json` — Version bumped 0.4.0 → 0.5.0
+- Validation performed:
+  - `pnpm build` passes (16 routes, TypeScript OK, ~2s compile)
+  - macOS DMG+ZIP (x64+arm64) — builds OK
+  - Windows NSIS (x64+arm64) — builds OK after .next/node_modules filter
+  - Linux deb+AppImage (x64+arm64) — builds OK
+  - Android APK — BUILD SUCCESSFUL with JDK 21
+  - GitHub release — 20 assets uploaded and verified
+- CSS/UI preservation: No CSS changes in this session
+- Real data/API credential check: No credential changes
+- Known issues:
+  - Windows build still requires manual cleanup of .next/node_modules dangling symlinks — the electron-builder.yml filter should prevent recurrence
+  - Android build now requires JDK 21 (JAVA_HOME must point to it for Gradle)
+  - macOS and Windows binaries are NOT code-signed (no Developer ID certificate available)
+- Next step: Deploy latest to Vercel via GitHub Actions push to main

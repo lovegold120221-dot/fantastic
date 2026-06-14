@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { PICKER_LANGUAGES, getLanguageByCode } from "@/lib/languages";
 import { useTextStream, useRemoteParticipants } from "@livekit/components-react";
-import { TranslatorSpeakerIcon, TranslatorSpeakerOffIcon } from "./icons";
+import { SpeakerIcon, SpeakerOffIcon } from "./icons";
 
 const VOICES = [
   { id: "male1", name: "Male 1" },
@@ -142,7 +142,7 @@ export default function OrbitTranslationPanel({
           title={translatorMuted ? "Unmute translator" : "Mute translator"}
           aria-label={translatorMuted ? "Unmute translator" : "Mute translator"}
         >
-          {translatorMuted ? <TranslatorSpeakerOffIcon /> : <TranslatorSpeakerIcon />}
+          {translatorMuted ? <SpeakerOffIcon /> : <SpeakerIcon />}
         </button>
 
         <button className="sidebar-close" onClick={onClose} aria-label="Close">
