@@ -53,6 +53,7 @@ export default function ControlBar({
   const [shareWithAudio, setShareWithAudio] = useState(true);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const customScreenShareTrackRef = useRef<MediaStreamTrack | null>(null);
   const [copied, setCopied] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
 
@@ -89,9 +90,22 @@ export default function ControlBar({
     await localParticipant.setCameraEnabled(!camOn);
   }
   async function handleShareScreen() {
-    if (screenShareOn) {
+    if (screenShareOn || customScreenShareTrackRef.current) {
       // Stop sharing immediately
-      await localParticipant.setScreenShareEnabled(false);
+      const nativeScreenShare = (window as unknown as { NativeScreenShare?: { startScreenShare: () => void; stopScreenShare: () => void } }).NativeScreenShare;
+      if (nativeScreenShare) {
+        nativeScreenShare.stopScreenShare();
+        delete (window as unknown as { onNativeScreenShareFrame?: (dataUrl: string) => void }).onNativeScreenShareFrame;
+      }
+
+      if (customScreenShareTrackRef.current) {
+        const track = customScreenShareTrackRef.current;
+        track.stop();
+        await localParticipant.unpublishTrack(track);
+        customScreenShareTrackRef.current = null;
+      } else {
+        await localParticipant.setScreenShareEnabled(false);
+      }
       return;
     }
 
@@ -101,6 +115,47 @@ export default function ControlBar({
 
   async function confirmShareScreen() {
     setShowShareDialog(false);
+
+    const nativeScreenShare = (window as unknown as { NativeScreenShare?: { startScreenShare: () => void; stopScreenShare: () => void } }).NativeScreenShare;
+    if (nativeScreenShare) {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 360;
+        canvas.height = 640;
+        const ctx = canvas.getContext("2d");
+
+        (window as unknown as { onNativeScreenShareFrame?: (dataUrl: string) => void }).onNativeScreenShareFrame = (dataUrl: string) => {
+          if (dataUrl === "error:PermissionDenied") {
+            alert("Native screen share permission denied");
+            return;
+          }
+          const img = new Image();
+          img.onload = () => {
+            if (ctx) {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            }
+          };
+          img.src = dataUrl;
+        };
+
+        nativeScreenShare.startScreenShare();
+
+        const stream = canvas.captureStream(5);
+        const track = stream.getVideoTracks()[0];
+        customScreenShareTrackRef.current = track;
+
+        await localParticipant.publishTrack(track, {
+          name: "screen",
+          source: Track.Source.ScreenShare,
+        });
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        alert("Failed to start native screen share: " + msg);
+      }
+      return;
+    }
+
     try {
       await localParticipant.setScreenShareEnabled(true, {
         audio: shareWithAudio,
