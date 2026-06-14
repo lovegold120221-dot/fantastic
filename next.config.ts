@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Permissions-Policy",
+            value: "camera=*, microphone=*, display-capture=*, autoplay=*, fullscreen=*",
+          },
+        ],
+      },
+      {
         source: "/sw.js",
         headers: [
           {
