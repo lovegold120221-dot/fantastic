@@ -94,16 +94,7 @@ export default function ControlBar({
       await localParticipant.setScreenShareEnabled(false);
       return;
     }
-    const isMobile = window.innerWidth <= 768 || /Mobi|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-      try {
-        await localParticipant.setScreenShareEnabled(true, { audio: false });
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : String(e);
-        alert("Failed to start screen share: " + msg);
-      }
-      return;
-    }
+
     // Show dialog to choose options
     setShowShareDialog(true);
   }

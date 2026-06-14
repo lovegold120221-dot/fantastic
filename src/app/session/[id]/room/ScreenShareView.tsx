@@ -39,10 +39,12 @@ export default function ScreenShareView({
           pub.track &&
           !pub.isMuted
         ) {
-          setActiveShare({
-            participant: localParticipant,
-            track: pub.track.mediaStreamTrack,
-          });
+          const track = pub.track.mediaStreamTrack;
+          setActiveShare((prev) => 
+            prev?.track === track && prev?.participant.identity === localParticipant.identity 
+              ? prev 
+              : { participant: localParticipant, track }
+          );
           return;
         }
       }
@@ -54,15 +56,17 @@ export default function ScreenShareView({
             pub.track &&
             !pub.isMuted
           ) {
-            setActiveShare({
-              participant: p,
-              track: pub.track.mediaStreamTrack,
-            });
+            const track = pub.track.mediaStreamTrack;
+            setActiveShare((prev) => 
+              prev?.track === track && prev?.participant.identity === p.identity 
+                ? prev 
+                : { participant: p, track }
+            );
             return;
           }
         }
       }
-      setActiveShare(null);
+      setActiveShare((prev) => prev === null ? null : null);
     };
 
     sync();
@@ -99,7 +103,7 @@ export default function ScreenShareView({
     return () => {
       video.srcObject = null;
     };
-  }, [activeShare]);
+  }, [activeShare?.track]);
 
   if (!activeShare) return null;
 
