@@ -1359,4 +1359,25 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
 ### Files changed
 - `upgrade_proposals.md` (NEW artifact in App Data folder) — Generated the proposals document.
 
+## TASK-20260614-150500: Allow and configure native screen sharing on mobile
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-14T15:05:00Z
+- User request: add screen sharing natively in mobile must be allowed and configured properly
+
+### WHAT WAS DONE
+- Configured native Android settings for screen capture (`MediaProjection`) and foreground services.
+- Created `MediaProjectionService.java` to capture, scale, and stream screen frames natively.
+- Implemented `@JavascriptInterface` bridge in `MainActivity.java` to launch the permission request and stream frames back.
+- Intercepted screenshare request in `ControlBar.tsx` for Capacitor, routing frames into an offscreen canvas and publishing it as a LiveKit WebRTC track.
+- Verified Next.js Turbopack build and ran Capacitor android asset synchronization successfully.
+
+### Files changed
+- `android/app/src/main/AndroidManifest.xml` (MODIFY)
+- `android/app/src/main/java/ai/eburon/orbit/meeting/MainActivity.java` (MODIFY)
+- `android/app/src/main/java/ai/eburon/orbit/meeting/MediaProjectionService.java` (NEW)
+- `src/app/session/[id]/room/ControlBar.tsx` (MODIFY)
+
+
 
