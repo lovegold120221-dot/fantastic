@@ -1,4 +1,3 @@
-/* eslint-disable react/forbid-dom-props, react/forbid-component-props, react-native/no-inline-styles */
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
@@ -19,8 +18,6 @@ export default function OrbitTranslationPanel({
   onClose,
   myLang,
   onLangChange,
-  translationEnabled,
-  onToggleTranslation,
   translatorMuted,
   onToggleTranslator,
   peerLangs,
@@ -28,8 +25,6 @@ export default function OrbitTranslationPanel({
   onClose: () => void;
   myLang: string;
   onLangChange: (lang: string) => void;
-  translationEnabled: boolean;
-  onToggleTranslation: () => void;
   translatorMuted: boolean;
   onToggleTranslator: () => void;
   peerLangs: Map<string, string | undefined>;

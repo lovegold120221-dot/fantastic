@@ -247,8 +247,6 @@ export default function InCall({
               onClose={() => setActiveSidebar(null)}
               myLang={lang}
               onLangChange={setLang}
-              translationEnabled={translationEnabled}
-              onToggleTranslation={() => setTranslationEnabled((v) => !v)}
               translatorMuted={translatorMuted}
               onToggleTranslator={() => setTranslatorMuted((v) => !v)}
               peerLangs={peerLangs}
