@@ -257,38 +257,8 @@ class GeminiSession:
                 "soixante-dix/ quatre-vingt-dix). Sound like you are from Brussels "
                 "or Wallonia, not from Paris."
             ),
-            "de-BE": (
-                " The target language is Belgian German. Use Belgian German "
-                "vocabulary and intonation."
-            ),
-            "ceb": (
-                " The target language is Cebuano (Bisaya). Do NOT translate into "
-                "Tagalog. Use strictly Cebuano grammar, vocabulary, and pronunciation. "
-                "Never use Tagalog words or Tagalog sentence structures."
-            ),
         }
         dialect_instruction = dialect_map.get(self._target_lang, "")
-
-        # Gemini 3.5 Live API officially supports these exact target codes.
-        SUPPORTED_API_CODES = {
-            "af", "ak", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "my", "ca",
-            "ceb", "zh-CN", "zh-TW", "co", "hr", "cs", "da", "nl", "en", "eo", "et", "fi", "fr",
-            "gl", "ka", "de", "el", "gu", "ht", "ha", "haw", "he", "hi", "hmn", "hu", "is", "ig",
-            "id", "ga", "it", "ja", "jv", "kn", "kk", "km", "rw", "ko", "ku", "ky", "lo", "la",
-            "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "ne", "no", "ny",
-            "or", "ps", "fa", "pl", "pt-BR", "pt-PT", "pa", "ro", "ru", "sm", "gd", "sr", "sn",
-            "sd", "si", "sk", "sl", "so", "st", "es", "su", "sw", "sv", "tg", "ta", "tt", "te",
-            "th", "tr", "tk", "uk", "ur", "ug", "uz", "vi", "cy", "fy", "xh", "yi", "yo", "zu"
-        }
-
-        api_target_code = self._target_lang
-        if api_target_code not in SUPPORTED_API_CODES:
-            base_lang = self._target_lang.split("-")[0]
-            if base_lang in SUPPORTED_API_CODES:
-                api_target_code = base_lang
-            else:
-                api_target_code = "en"
-                dialect_instruction += f" IMPORTANT: The requested target language code '{self._target_lang}' is a rare dialect. You MUST speak and translate strictly in the '{self._target_lang}' language despite any system defaults."
 
         return {
             "setup": {
@@ -298,7 +268,7 @@ class GeminiSession:
                 "generationConfig": {
                     "responseModalities": ["AUDIO"],
                     "translationConfig": {
-                        "targetLanguageCode": api_target_code,
+                        "targetLanguageCode": self._target_lang,
                         "echoTargetLanguage": True,
                     },
                 },
