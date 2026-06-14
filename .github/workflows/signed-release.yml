@@ -54,22 +54,32 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
 
       - name: Build + notarize macOS (x64)
-        run: npx electron-builder --config electron-builder.yml --mac --x64
-        env:
-          CSC_LINK: /tmp/certificate.p12
-          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -f /tmp/certificate.p12 ]; then
+            CSC_LINK=/tmp/certificate.p12 \
+            CSC_KEY_PASSWORD="${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" \
+            APPLE_ID="${{ secrets.APPLE_ID }}" \
+            APPLE_APP_SPECIFIC_PASSWORD="${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" \
+            APPLE_TEAM_ID="${{ secrets.APPLE_TEAM_ID }}" \
+            npx electron-builder --config electron-builder.yml --mac --x64
+          else
+            echo "No signing certificate found — building unsigned"
+            npx electron-builder --config electron-builder.yml --mac --x64
+          fi
 
       - name: Build + notarize macOS (arm64)
-        run: npx electron-builder --config electron-builder.yml --mac --arm64
-        env:
-          CSC_LINK: /tmp/certificate.p12
-          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -f /tmp/certificate.p12 ]; then
+            CSC_LINK=/tmp/certificate.p12 \
+            CSC_KEY_PASSWORD="${{ secrets.MACOS_CERTIFICATE_PASSWORD }}" \
+            APPLE_ID="${{ secrets.APPLE_ID }}" \
+            APPLE_APP_SPECIFIC_PASSWORD="${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" \
+            APPLE_TEAM_ID="${{ secrets.APPLE_TEAM_ID }}" \
+            npx electron-builder --config electron-builder.yml --mac --arm64
+          else
+            echo "No signing certificate found — building unsigned"
+            npx electron-builder --config electron-builder.yml --mac --arm64
+          fi
 
       - name: Create release if not exists
         run: gh release create "${{ inputs.tag }}" --title "${{ inputs.tag }}" --generate-notes || true
