@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 
 export default function UpdatePasswordPage() {
@@ -44,7 +45,7 @@ export default function UpdatePasswordPage() {
       <main className="auth-shell">
         <div className="auth-card">
           <div className="auth-brand">
-            <div className="auth-logo-bg"><img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" /></div>
+            <div className="auth-logo-bg"><Image src="/icon-eburon.svg" alt="Eburon AI" width={24} height={24} className="auth-brand-logo" /></div>
             <span>Orbit Meeting</span>
           </div>
           <h1 className="auth-title">Password updated</h1>
@@ -61,7 +62,7 @@ export default function UpdatePasswordPage() {
     <main className="auth-shell">
       <div className="auth-card">
         <div className="auth-brand">
-          <div className="auth-logo-bg"><img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" /></div>
+          <div className="auth-logo-bg"><Image src="/icon-eburon.svg" alt="Eburon AI" width={24} height={24} className="auth-brand-logo" /></div>
           <span>Orbit Meeting</span>
         </div>
         <h1 className="auth-title">Set new password</h1>

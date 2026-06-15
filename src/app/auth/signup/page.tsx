@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 
 export default function SignupPage() {
-  const router = useRouter();
   const { signUp } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -48,7 +47,7 @@ export default function SignupPage() {
       <main className="auth-shell">
         <div className="auth-card">
           <div className="auth-brand">
-            <div className="auth-logo-bg"><img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" /></div>
+            <div className="auth-logo-bg"><Image src="/icon-eburon.svg" alt="Eburon AI" width={24} height={24} className="auth-brand-logo" /></div>
             <span>Orbit Meeting</span>
           </div>
           <h1 className="auth-title">Check your email</h1>
@@ -67,7 +66,7 @@ export default function SignupPage() {
     <main className="auth-shell">
       <div className="auth-card">
         <div className="auth-brand">
-          <div className="auth-logo-bg"><img src="/icon-eburon.svg" alt="Eburon AI" className="auth-brand-logo" /></div>
+          <div className="auth-logo-bg"><Image src="/icon-eburon.svg" alt="Eburon AI" width={24} height={24} className="auth-brand-logo" /></div>
           <span>Orbit Meeting</span>
         </div>
         <h1 className="auth-title">Create account</h1>

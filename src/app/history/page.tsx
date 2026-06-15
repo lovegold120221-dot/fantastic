@@ -121,7 +121,7 @@ export default function HistoryPage() {
           <h1>Translation History</h1>
         </div>
         <div className="settings-topbar-right">
-          <div className="history-search-wrapper" style={{ marginRight: '16px' }}>
+          <div className="history-search-wrapper">
             <svg
               className="history-search-icon"
               width="16"

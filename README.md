@@ -217,7 +217,7 @@ Open <http://localhost:3000>, click **Create session**, share the URL with anoth
 | **Windows**   | `.exe` (NSIS) / portable| `pnpm electron:build:win`   |
 | **Linux**     | `.AppImage` / `.deb`    | `pnpm electron:build:linux` |
 | **Android**   | `.apk` (debug)          | `pnpm mobile:build`         |
-| **Android**   | `.apk` / `.aab` (release)| `pnpm mobile:build:release` |
+| **Android**   | `.apk` / `.aab` (release) | `pnpm mobile:build:release` |
 
 ### Build the Android APK
 
@@ -343,9 +343,9 @@ Requires these secrets on the GitHub repo:
 | `VERCEL_PROJECT_ID`            | Vercel project settings                                        |
 | `LIVEKIT_URL`                  | LiveKit Cloud dashboard                                        |
 | `LIVEKIT_API_KEY`              | LiveKit Cloud dashboard                                        |
-| `LIVEKIT_API_SECRET`            | LiveKit Cloud dashboard                                        |
-| `NEXT_PUBLIC_SUPABASE_URL`      | Supabase project settings                                      |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase project settings                                      |
+| `LIVEKIT_API_SECRET`           | LiveKit Cloud dashboard                                        |
+| `NEXT_PUBLIC_SUPABASE_URL`     | Supabase project settings                                      |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`| Supabase project settings                                      |
 
 ### Agent — to LiveKit Cloud Agents
 
