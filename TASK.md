@@ -1,5 +1,26 @@
 # Orbit Meeting Task Ledger
 
+<!-- BEGIN ANCHORED SUMMARY -->
+## Anchored Summary
+
+### Done
+- Added Translation History page (`/history`) with search, session grouping, chronological order, empty state — history icon in ControlBar center section
+- Created translation_history table migration, localStorage + Supabase persistence, history help lib
+- Wired translation capture in OrbitTranslationPanel — finalized entries saved to localStorage + Supabase in batch
+- Pushed entire codebase as clean initial commit to `special-carnival` repo (orphan branch → main)
+- Rewrote Gemini system instruction for grammatical perfection + human delivery with vocal mimicry
+- Added password visibility toggles + confirm-password validation on auth pages
+- Minor fixes: Next.js Image component, unused import cleanup, README formatting
+- **Chat file/image attachments** — Supabase `chat-files` storage bucket + migration columns, paperclip upload button, progress bar, attachment previews (image thumbnails, video/audio players, file download cards), LiveKit data channel + Supabase persistence with attachment metadata
+
+### In Progress
+- (none)
+
+### Blocked
+- (none)
+
+<!-- END ANCHORED SUMMARY -->
+
 ## TASK-20260613-173000: Fix captions, translator, and auth entry page
 
 ### START RECORD
@@ -1626,3 +1647,92 @@ Agent starts, connects to LiveKit Cloud (`wss://eburon-meet-15gd8gwg.livekit.clo
 ### Next step
 - Run migration `005_translation_history.sql` in Supabase SQL Editor for remote sync
 - Test end-to-end: join meeting → translate → navigate to /history → see saved entries
+
+---
+
+## TASK-20260615-214500: Add file/image/document attachments to chat
+
+### START RECORD
+- STATUS: COMPLETED
+- Start time: 2026-06-15T21:45:00Z
+- User request: Add ability to attach files, images, and documents to chat messages in the in-meeting sidebar
+- Preservation constraints: Preserve existing ChatSidebar layout, data channel protocol, Supabase persistence pattern, CSS variable system, icon style
+- Success criteria:
+  - SQL migration with attachment columns + storage bucket + RLS policies
+  - Paperclip attachment button in chat footer
+  - File upload to Supabase Storage with progress indication
+  - Inline rendering: image thumbnails, video/audio players, file download cards
+  - Attachment metadata sent via LiveKit data channel + persisted to Supabase
+  - pnpm build + pytest both pass
+
+### TODO
+- [x] Create SQL migration (006_chat_attachments.sql)
+- [x] Add AttachmentIcon to icons.tsx
+- [x] Extend ChatMessage type with optional attachment fields
+- [x] Rewrite ChatSidebar with file picker, upload, progress bar, attachment chip, AttachmentView
+- [x] Add ~150 lines of attachment CSS to globals.css
+- [x] Fix ESLint issues (ref access during render, before-declaration access, unused directives)
+- [x] Validate: pnpm build, pytest, eslint
+- [x] Commit and push to both remotes
+
+### FINAL REPORT
+
+**What was built:**
+
+1. **SQL Migration** — `supabase/migrations/006_chat_attachments.sql`
+   - Adds `attachment_name`, `attachment_type`, `attachment_size`, `attachment_url` columns to `chat_messages` (all nullable, backward compatible)
+   - Creates `chat-files` storage bucket (10MB, whitelisted MIME types: images, PDF, text, CSV, Office docs, audio, video, zip)
+   - RLS policies: INSERT allowed for all authenticated users, SELECT for all, DELETE for authenticated users
+   - Idempotent: `ADD COLUMN IF NOT EXISTS`, `WHERE NOT EXISTS` bucket check
+
+2. **AttachmentIcon** — paperclip SVG icon added to `icons.tsx` matching the 18px line-based design system
+
+3. **ChatSidebar rewrite** — `src/app/session/[id]/room/ChatSidebar.tsx` (+400 lines)
+   - Paperclip button opens a filtered `<input type="file">` (accepts the same MIME types as the bucket)
+   - Immediate upload to Supabase Storage (`chat-files/{roomName}/{timestamp}-{safeFilename}`)
+   - Simulated progress bar (Supabase JS SDK doesn't expose real upload progress; nudged in 10% increments to 90%, then jumps to 100% on completion)
+   - Pending attachment chip: shows filename, size, progress bar during upload; shows remove (×) button once complete
+   - Send includes attachment URL, name, MIME type, and size in the data channel message + Supabase row
+   - Receiving side parses attachments from incoming messages and renders them via `AttachmentView`
+   - Covers edge cases: empty file (no selected), too-large file (10MB limit), upload failure (shows error), upload in progress (disables Send + paperclip button)
+
+4. **AttachmentView component** — renders based on MIME type:
+   - Images: `<img>` thumbnail (max 200px, click opens full in new tab), `loading="lazy"`
+   - Videos: `<video>` with controls, preload metadata, max 240px height
+   - Audio: `<audio>` with controls, full width
+   - Other files: download card with extension badge, filename (ellipsized), file size, download icon
+
+5. **CSS** — ~150 lines of attachment styles in `globals.css`
+   - `.chat-sidebar-file-input` (hidden), `.chat-sidebar-attach-btn` (paperclip, 34×34px, disabled state)
+   - `.chat-attachment-pending` (chip with bar/remove), `.chat-attachment-pending-bar-track/fill`
+   - `.chat-attachment-image-wrapper/image` (max 200px, zoom cursor)
+   - `.chat-attachment-video`, `.chat-attachment-file`, `.chat-attachment-file-icon/meta/name/size/dl`
+
+### Validation
+- `pnpm build` — ✅ compiled clean (17 routes)
+- `cd translator && uv run pytest` — ✅ 15/15 passed
+- `npx eslint src/app/session/\[id\]/room/ChatSidebar.tsx` — ✅ 0 errors, 0 warnings
+- Pushed to both `fantastic` (origin) and `special-carnival` remotes
+
+### CSS/UI preservation
+- All existing chat message layout, header, footer, and input styles remain unchanged
+- Attachment styles added as new CSS classes (no existing classes modified)
+- AttachmentIcon follows the same 18px/1.5px stroke pattern as all other icons
+- Dark/light theme compatible (uses CSS variable system)
+
+### Real data/API credential check
+- File upload uses the existing Supabase client with the existing anon key
+- Storage bucket and RLS created from migration — no hardcoded secrets
+- No mock data — all file uploads are real files uploaded to Supabase Storage
+- LiveKit data channel sends real attachment metadata (URLs are real Supabase public URLs)
+
+### Known issues
+- Supabase JS SDK doesn't expose upload progress — simulated via `setInterval` nudges; may jump from ~90% to 100% abruptly
+- No attachment message editing (cannot remove attachment from an already-sent message — out of scope)
+- Large files (close to 10MB) may show slow uploads with no visible progress for the first ~10 seconds (the progress sim nudges from 0)
+- The `chat-files` storage bucket must exist for uploads to work (run migration 006 first)
+- File attachments are not deleted when a message is deleted (Supabase cascade not configured — storage objects live independently)
+
+### Next step
+- Run migration `006_chat_attachments.sql` in Supabase SQL Editor to create the storage bucket and columns
+- Test end-to-end: join meeting → chat → attach file → verify upload + thumbnail + download works
