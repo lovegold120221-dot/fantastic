@@ -22,7 +22,7 @@ import BreakoutSidebar from "./BreakoutSidebar";
 import ScreenShareView from "./ScreenShareView";
 import OrbitTranslationPanel from "./OrbitTranslationPanel";
 import GalleryView from "./GalleryView";
-import { SpeakerIcon, SpeakerOffIcon, ChevronDownIcon, LinkIcon, ShieldCheckIcon } from "./icons";
+import { SpeakerIcon, SpeakerOffIcon, ChevronDownIcon, LinkIcon, ShieldCheckIcon, FilmIcon } from "./icons";
 
 export default function InCall({
   initialLang,
@@ -41,6 +41,9 @@ export default function InCall({
   const [speakerMuted, setSpeakerMuted] = useState(false);
   const [headerCopied, setHeaderCopied] = useState(false);
   const [handRaised, setHandRaised] = useState(false);
+  const [contentType, setContentType] = useState<"normal" | "movie">(
+    profile?.content_type || "normal"
+  );
   const router = useRouter();
   const isHost = typeof window !== 'undefined' && window.sessionStorage.getItem("orbitHostRoom") === room.name;
 
@@ -128,7 +131,7 @@ export default function InCall({
           orbit_hand: handRaised ? "raised" : "",
           orbit_host: isHost ? "true" : "",
           orbit_glossary: glossaryStr,
-          orbit_content_type: profile?.content_type || "normal",
+          orbit_content_type: contentType,
         });
       }
     };
@@ -137,7 +140,14 @@ export default function InCall({
     return () => {
       room.off(RoomEvent.Connected, apply);
     };
-  }, [room, localParticipant, lang, handRaised, isHost, profile?.glossary, profile?.content_type]);
+  }, [room, localParticipant, lang, handRaised, isHost, profile?.glossary, contentType]);
+
+  // Sync local contentType state from the user profile when it loads/changes
+  useEffect(() => {
+    if (profile?.content_type) {
+      setContentType(profile.content_type);
+    }
+  }, [profile?.content_type]);
 
   useTranslationRouting(lang, localParticipant.identity, true, true, true, translatorMuted, speakerMuted);
 
@@ -185,6 +195,23 @@ export default function InCall({
               <span className="orbit-translation-status orbit-translation-status-text">
                 Translation: {langInfo?.name || lang}
               </span>
+              <label
+                className={`orbit-movie-toggle${contentType === "movie" ? " active" : ""}`}
+                title={contentType === "movie" ? "Movie dubbing mode ON" : "Movie dubbing mode OFF — click when sharing a film"}
+              >
+                <input
+                  type="checkbox"
+                  checked={contentType === "movie"}
+                  onChange={(e) => {
+                    const next = e.target.checked ? "movie" : "normal";
+                    setContentType(next);
+                    localParticipant?.setAttributes({ orbit_content_type: next });
+                  }}
+                  aria-label="Toggle movie dubbing mode"
+                />
+                <FilmIcon />
+                <span>Movie</span>
+              </label>
               <button
                 className="orbit-view-btn"
                 onClick={() => setTranslatorMuted(!translatorMuted)}
