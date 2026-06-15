@@ -1,9 +1,16 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { PICKER_LANGUAGES } from "@/lib/languages";
 import { useUser } from "@/context/UserContext";
+import type { PermissionStatus } from "@/lib/permissions";
+import {
+  getPermissionStatus,
+  requestPermission,
+  isMobile,
+  isIOS,
+} from "@/lib/permissions";
 
 const STORAGE_KEY_NAME = "lt.displayName";
 const STORAGE_KEY_LANG = "lt.lang";
@@ -25,6 +32,8 @@ export default function PreFlightPage({
   const [displayName, setDisplayName] = useState("");
   const [lang, setLang] = useState<string>("en");
   const [shareCopied, setShareCopied] = useState(false);
+  const [micStatus, setMicStatus] = useState<PermissionStatus | "checking">("checking");
+  const [camStatus, setCamStatus] = useState<PermissionStatus | "checking">("checking");
 
   // Hydrate from sessionStorage + profile after mount so server & client
   // first render are identical (prevents hydration mismatch on disabled attr).
@@ -38,6 +47,28 @@ export default function PreFlightPage({
       if (!savedLang && profile?.default_language) setLang(profile.default_language);
     }, 0);
   }, [profile]);
+
+  // Detect current camera/mic permission status on mount
+  useEffect(() => {
+    (async () => {
+      setMicStatus(await getPermissionStatus("microphone"));
+      setCamStatus(await getPermissionStatus("camera"));
+    })();
+  }, []);
+
+  const requestMic = useCallback(async () => {
+    const status = await requestPermission("microphone");
+    setMicStatus(status);
+  }, []);
+
+  const requestCam = useCallback(async () => {
+    const status = await requestPermission("camera");
+    setCamStatus(status);
+  }, []);
+
+  const requestAllMedia = useCallback(async () => {
+    await Promise.all([requestMic(), requestCam()]);
+  }, [requestMic, requestCam]);
 
   async function handleJoin() {
     if (!displayName.trim()) return;
@@ -129,10 +160,91 @@ export default function PreFlightPage({
           </button>
         </div>
 
-        <p className="mono enter-d4 mt-32">
-          Camera and mic stay off until you turn them on.
-        </p>
+        {/* Permission status indicators */}
+        {(micStatus !== "checking" || camStatus !== "checking") && (
+          <div className="permission-status mt-32">
+            <p className="mono permission-status-label">Device Access</p>
+            <div className="permission-status-row">
+              <PermissionBadge
+                kind="Microphone"
+                status={micStatus}
+                onRequest={requestMic}
+              />
+              <PermissionBadge
+                kind="Camera"
+                status={camStatus}
+                onRequest={requestCam}
+              />
+              <PermissionBadge
+                kind="Screen Share"
+                status={
+                  isIOS() ? "unsupported" : "prompt"
+                }
+                onRequest={async () => {}}
+              />
+            </div>
+            {isIOS() && (
+              <p className="permission-status-note">
+                Screen sharing is not available on iOS. Share your screen from a desktop browser.
+              </p>
+            )}
+            {!isMobile() && micStatus !== "granted" && (
+              <p className="permission-status-note">
+                Grant Microphone access to speak in the meeting.
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+// ── Permission Badge Component ──────────────────────────────────────────
+
+function PermissionBadge({
+  kind,
+  status,
+  onRequest,
+}: {
+  kind: string;
+  status: PermissionStatus | "checking";
+  onRequest: () => void;
+}) {
+  if (status === "checking") {
+    return (
+      <div className="perm-badge">
+        <span className="perm-badge-dot perm-badge-dot--pending" />
+        <span className="perm-badge-label">{kind}</span>
+        <span className="perm-badge-status">checking</span>
+      </div>
+    );
+  }
+
+  const granted = status === "granted";
+  const unsupported = status === "unsupported";
+
+  return (
+    <button
+      type="button"
+      className={`perm-badge${granted ? " perm-badge--granted" : ""}${unsupported ? " perm-badge--unsupported" : ""}`}
+      onClick={unsupported ? undefined : onRequest}
+      disabled={unsupported}
+      title={
+        unsupported
+          ? "Not available on this device"
+          : granted
+            ? "Permission granted"
+            : `Tap to allow ${kind}`
+      }
+    >
+      <span
+        className={`perm-badge-dot${granted ? " perm-badge-dot--granted" : ""}${unsupported ? " perm-badge-dot--unsupported" : ""}`}
+      />
+      <span className="perm-badge-label">{kind}</span>
+      <span className="perm-badge-status">
+        {granted ? "on" : unsupported ? "unavailable" : "off"}
+      </span>
+    </button>
   );
 }

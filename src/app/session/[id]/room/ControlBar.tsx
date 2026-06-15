@@ -9,6 +9,7 @@ import {
   useTrackVolume,
 } from "@livekit/components-react";
 import { Track, LocalAudioTrack } from "livekit-client";
+import { isMobile, isIOS } from "@/lib/permissions";
 import { SpeakerIcon, SpeakerOffIcon } from "./icons";
 import {
   CamOffIcon,
@@ -705,7 +706,11 @@ export default function ControlBar({
               <div>
                 <h3 className="share-dialog-title" id="share-dialog-title">Share screen</h3>
                 <p className="share-dialog-desc" id="share-dialog-desc">
-                  Start a screen share for this meeting.
+                  {isIOS()
+                    ? "Screen sharing requires a desktop browser (Chrome, Edge, or Firefox)."
+                    : isMobile()
+                      ? "Share your screen. You'll be asked to choose which window or screen to share."
+                      : "Share your screen, window, or presentation with the meeting."}
                 </p>
               </div>
               <button
@@ -721,7 +726,9 @@ export default function ControlBar({
 
             {!canStartScreenShare && (
               <div className="share-dialog-error" role="status">
-                Screen sharing is not available in this browser.
+                {isIOS()
+                  ? "Screen sharing is not available on iOS. Use a desktop browser (Chrome, Edge, or Firefox) to share your screen."
+                  : "Screen sharing is not available in this browser. Try Chrome, Edge, or Firefox on desktop."}
               </div>
             )}
 

@@ -14,7 +14,12 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Permissions-Policy",
-            value: "camera=*, microphone=*, display-capture=*, autoplay=*, fullscreen=*",
+            value: "camera=(self), microphone=(self), display-capture=(self), autoplay=(self), fullscreen=(self), clipboard-read=(self), clipboard-write=(self), geolocation=(self), screen-wake-lock=(self), picture-in-picture=(self)",
+          },
+          {
+            // iOS-friendly meta-equivalent via header (some mobile browsers respect this)
+            key: "Accept-CH",
+            value: "Sec-CH-UA-Platform",
           },
         ],
       },
