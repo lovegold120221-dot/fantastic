@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
 type ActivePanel = "join" | "schedule";
@@ -22,12 +21,6 @@ export default function Home() {
   const [scheduleTime, setScheduleTime] = useState("");
   const [scheduledLink, setScheduledLink] = useState("");
   const [copied, setCopied] = useState(false);
-  const [availableProfiles, setAvailableProfiles] = useState<any[]>([]);
-  const [selectedParticipants, setSelectedParticipants] = useState<any[]>([]);
-  const [customName, setCustomName] = useState("");
-  const [customEmail, setCustomEmail] = useState("");
-  const [customPhone, setCustomPhone] = useState("");
-  const [showCustomForm, setShowCustomForm] = useState(false);
   const { profile } = useUser();
   const theme = profile?.theme || "system";
   const supabaseConfigured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
@@ -101,18 +94,6 @@ export default function Home() {
     if (!scheduledLink) {
       setScheduledLink(`${window.location.origin}/session/${crypto.randomUUID()}`);
     }
-
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, name, email, phone")
-        .neq("id", user?.id || "");
-      if (!error && data) {
-        setAvailableProfiles(data);
-      }
-    } catch (e) {
-      console.error("Failed to load profiles for invites:", e);
-    }
   }
 
   async function copyScheduleLink() {
@@ -122,59 +103,24 @@ export default function Home() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const selectableProfiles = availableProfiles.filter(
-    (p) => !selectedParticipants.some((sp) => sp.id === p.id)
-  );
-
-  const handleSelectProfile = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const profileId = e.target.value;
-    if (!profileId) return;
-
-    const selected = availableProfiles.find((p) => p.id === profileId);
-    if (selected) {
-      setSelectedParticipants((prev) => [...prev, selected]);
-    }
-    e.target.value = "";
-  };
-
-  function addCustomParticipant() {
-    if (!customName.trim()) return;
-    const newParticipant = {
-      id: `custom-${crypto.randomUUID()}`,
-      name: customName.trim(),
-      email: customEmail.trim(),
-      phone: customPhone.trim(),
-      isCustom: true,
-    };
-    setSelectedParticipants((prev) => [...prev, newParticipant]);
-    setCustomName("");
-    setCustomEmail("");
-    setCustomPhone("");
-    setShowCustomForm(false);
-  }
-
-  function removeParticipant(index: number) {
-    setSelectedParticipants((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function getEmailLink(participant: any) {
-    if (!participant.email) return "#";
+  function getEmailLink() {
     const timeStr = scheduleTime ? formatScheduleTime(scheduleTime) : "Not set";
     const subject = `Invitation: ${scheduleTitle}`;
-    const body = `Hi ${participant.name},\n\nYou are invited to join an Orbit Meeting!\n\nTopic: ${scheduleTitle}\nTime: ${timeStr}\nJoin Link: ${scheduledLink}\n\nSee you there!`;
-    return `mailto:${encodeURIComponent(participant.email)}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
+    const body = `You are invited to join an Orbit Meeting!\n\nTopic: ${scheduleTitle}\nTime: ${timeStr}\nJoin Link: ${scheduledLink}\n\nSee you there!`;
+    return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   }
 
-  function getWhatsAppLink(participant: any) {
-    if (!participant.phone) return "#";
-    const sanitizedPhone = participant.phone.trim().replace(/[^0-9]/g, "");
+  function getGmailLink() {
+    const timeStr = scheduleTime ? formatScheduleTime(scheduleTime) : "Not set";
+    const subject = `Invitation: ${scheduleTitle}`;
+    const body = `You are invited to join an Orbit Meeting!%0A%0ATopic: ${encodeURIComponent(scheduleTitle)}%0ATime: ${encodeURIComponent(timeStr)}%0AJoin Link: ${encodeURIComponent(scheduledLink)}%0A%0ASee you there!`;
+    return `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${body}`;
+  }
+
+  function getWhatsAppLink() {
     const timeStr = scheduleTime ? formatScheduleTime(scheduleTime) : "Not set";
     const text = `You are invited to join an Orbit Meeting!\n\nTopic: ${scheduleTitle}\nTime: ${timeStr}\nLink: ${scheduledLink}`;
-    return `https://api.whatsapp.com/send?phone=${encodeURIComponent(
-      sanitizedPhone
-    )}&text=${encodeURIComponent(text)}`;
+    return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   }
 
   return (
@@ -299,131 +245,41 @@ export default function Home() {
                   className="entry-primary"
                   type="button"
                   onClick={copyScheduleLink}
-                  style={{ marginBottom: "16px" }}
                 >
                   {copied ? "Copied" : "Copy invite"}
                 </button>
 
-                <div className="invite-participants-section">
-                  <div className="invite-section-title">Invite Participants</div>
-                  
-                  <div className="participant-select-row">
-                    <label className="entry-field">
-                      <span>Select Registered Profile</span>
-                      <select
-                        className="select-field"
-                        onChange={handleSelectProfile}
-                        defaultValue=""
-                      >
-                        <option value="" disabled>Select participant...</option>
-                        {selectableProfiles.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name || p.email || "Unnamed Profile"}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <button
-                      type="button"
-                      className="custom-participant-toggle-btn"
-                      onClick={() => setShowCustomForm(!showCustomForm)}
-                    >
-                      {showCustomForm ? "Close Form" : "Add Custom Participant"}
-                    </button>
-                  </div>
-
-                  {showCustomForm && (
-                    <div className="custom-participant-form">
-                      <span className="custom-participant-form-title">Custom Participant</span>
-                      <div className="custom-participant-fields">
-                        <label className="entry-field">
-                          <span>Name</span>
-                          <input
-                            value={customName}
-                            onChange={(e) => setCustomName(e.target.value)}
-                            placeholder="e.g. John Doe"
-                          />
-                        </label>
-                        <label className="entry-field">
-                          <span>Email</span>
-                          <input
-                            type="email"
-                            value={customEmail}
-                            onChange={(e) => setCustomEmail(e.target.value)}
-                            placeholder="e.g. john@example.com"
-                          />
-                        </label>
-                        <label className="entry-field">
-                          <span>Phone (WhatsApp)</span>
-                          <input
-                            type="tel"
-                            value={customPhone}
-                            onChange={(e) => setCustomPhone(e.target.value)}
-                            placeholder="e.g. +1234567890"
-                          />
-                        </label>
-                      </div>
-                      <button
-                        type="button"
-                        className="custom-participant-btn"
-                        onClick={addCustomParticipant}
-                        disabled={!customName.trim()}
-                      >
-                        Add
-                      </button>
-                    </div>
-                  )}
-
-                  {selectedParticipants.length > 0 && (
-                    <div className="participants-list">
-                      {selectedParticipants.map((participant, index) => (
-                        <div className="participant-card" key={participant.id || index}>
-                          <div className="participant-info">
-                            <span className="participant-name">{participant.name}</span>
-                            <div className="participant-meta">
-                              {participant.email && <span>{participant.email}</span>}
-                              {participant.phone && <span>{participant.phone}</span>}
-                            </div>
-                          </div>
-                          <div className="participant-actions">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const link = getEmailLink(participant);
-                                if (link !== "#") window.location.href = link;
-                              }}
-                              className="invite-btn invite-btn-email"
-                              title="Send Email Invite"
-                              disabled={!participant.email}
-                            >
-                              <MailIcon />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const link = getWhatsAppLink(participant);
-                                if (link !== "#") window.open(link, "_blank", "noopener,noreferrer");
-                              }}
-                              className="invite-btn invite-btn-whatsapp"
-                              title="Send WhatsApp Invite"
-                              disabled={!participant.phone}
-                            >
-                              <WhatsAppIcon />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => removeParticipant(index)}
-                              className="invite-btn invite-btn-remove"
-                              title="Remove Participant"
-                            >
-                              <TrashIcon />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <div className="invite-share-bar">
+                  <button
+                    type="button"
+                    className="share-icon-btn share-icon-email"
+                    onClick={() => { window.location.href = getEmailLink(); }}
+                    title="Share via Email"
+                    aria-label="Share via Email"
+                  >
+                    <MailIcon />
+                    <span>Email</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="share-icon-btn share-icon-gmail"
+                    onClick={() => { window.open(getGmailLink(), "_blank", "noopener,noreferrer"); }}
+                    title="Share via Gmail"
+                    aria-label="Share via Gmail"
+                  >
+                    <GmailIcon />
+                    <span>Gmail</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="share-icon-btn share-icon-whatsapp"
+                    onClick={() => { window.open(getWhatsAppLink(), "_blank", "noopener,noreferrer"); }}
+                    title="Share via WhatsApp"
+                    aria-label="Share via WhatsApp"
+                  >
+                    <WhatsAppIcon />
+                    <span>WhatsApp</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -562,21 +418,15 @@ function WhatsAppIcon() {
   );
 }
 
-function TrashIcon() {
+function GmailIcon() {
   return (
     <svg
-      width="16"
-      height="16"
+      width="20"
+      height="20"
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
     >
-      <path d="M3 6h18" />
-      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
     </svg>
   );
 }
