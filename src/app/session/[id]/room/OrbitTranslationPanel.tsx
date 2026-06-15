@@ -12,6 +12,7 @@ interface Entry {
   sourceText: string;
   translatedText: string;
   sourceLang: string | undefined;
+  isFinal: boolean;
 }
 
 const VOICES = [
@@ -117,7 +118,13 @@ export default function OrbitTranslationPanel({
       const text = s.text.trim();
 
       if (!text) {
-        if (isFinal) openIdxBySource.delete(source);
+        if (isFinal) {
+          const openIdx = openIdxBySource.get(source);
+          if (openIdx !== undefined) {
+            out[openIdx].isFinal = true;
+          }
+          openIdxBySource.delete(source);
+        }
         continue;
       }
 
@@ -129,6 +136,7 @@ export default function OrbitTranslationPanel({
         } else {
           out[openIdx].translatedText = `${out[openIdx].translatedText} ${text}`.trim();
         }
+        if (isFinal) out[openIdx].isFinal = true;
       } else {
         // New entry
         out.push({
@@ -137,6 +145,7 @@ export default function OrbitTranslationPanel({
           sourceText: isSource ? text : "",
           translatedText: isSource ? "" : text,
           sourceLang: peerLangs.get(source),
+          isFinal: isFinal,
         });
         openIdxBySource.set(source, out.length - 1);
       }
@@ -169,6 +178,8 @@ export default function OrbitTranslationPanel({
     const newEntries: TranslationHistoryEntry[] = [];
     for (const entry of entries) {
       if (savedKeysRef.current.has(entry.key)) continue;
+      // Only capture when the turn is actually finalized
+      if (!entry.isFinal) continue;
       if (!entry.sourceText || !entry.translatedText) continue;
 
       const userId =
