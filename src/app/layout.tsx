@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { UserProvider } from "@/context/UserContext";
+import { CallProvider } from "@/context/CallContext";
 import { ServiceWorkerRegister } from "./ServiceWorkerRegister";
 import StarfieldBackground from "@/components/StarfieldBackground";
 
@@ -69,7 +70,9 @@ export default function RootLayout({
       <body>
         <StarfieldBackground />
         <AuthProvider>
-          <UserProvider>{children}</UserProvider>
+          <UserProvider>
+            <CallProvider>{children}</CallProvider>
+          </UserProvider>
         </AuthProvider>
         <ServiceWorkerRegister />
       </body>

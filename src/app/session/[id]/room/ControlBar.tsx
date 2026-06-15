@@ -271,6 +271,13 @@ export default function ControlBar({
           dataMobile="primary"
           hasCaret
         />
+        <CtrlButton
+          active={speakerMuted}
+          onClick={onToggleSpeaker}
+          label="Speaker"
+          icon={speakerMuted ? <SpeakerOffIcon /> : <SpeakerIcon />}
+          dataMobile="overflow"
+        />
       </div>
 
       {/* ——— Center: Features ——— */}
@@ -326,13 +333,6 @@ export default function ControlBar({
           onClick={toggleBreakout}
           label="Breakout"
           icon={<BreakoutRoomsIcon />}
-          dataMobile="overflow"
-        />
-        <CtrlButton
-          active={speakerMuted}
-          onClick={onToggleSpeaker}
-          label="Speaker"
-          icon={speakerMuted ? <SpeakerOffIcon /> : <SpeakerIcon />}
           dataMobile="overflow"
         />
         <CtrlButton

@@ -2,12 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  LiveKitRoom,
-  RoomAudioRenderer,
-  StartAudio,
-} from "@livekit/components-react";
-import "@livekit/components-styles";
+import { useCallContext } from "@/context/CallContext";
 import InCall from "./InCall";
 
 const STORAGE_KEY_NAME = "lt.displayName";
@@ -25,6 +20,7 @@ interface TokenResponse {
 
 export default function RoomClient({ sessionId }: { sessionId: string }) {
   const router = useRouter();
+  const { activeCall, setActiveCall, leaveCall } = useCallContext();
   const [token, setToken] = useState<string | null>(null);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +65,14 @@ export default function RoomClient({ sessionId }: { sessionId: string }) {
     }
 
     const isHost = typeof window !== 'undefined' && window.sessionStorage.getItem("orbitHostRoom") === sessionId;
+    
+    // If we are already connected to this session, reuse the context
+    if (activeCall && activeCall.sessionId === sessionId) {
+      setToken(activeCall.token);
+      setServerUrl(activeCall.serverUrl);
+      return;
+    }
+
     const url = `/api/token?room=${encodeURIComponent(
       sessionId,
     )}&identity=${encodeURIComponent(identity)}&name=${encodeURIComponent(displayName)}${isHost ? '&host=true' : ''}`;
@@ -83,12 +87,18 @@ export default function RoomClient({ sessionId }: { sessionId: string }) {
       .then((data) => {
         setToken(data.token);
         setServerUrl(data.serverUrl);
+        setActiveCall({
+          token: data.token,
+          serverUrl: data.serverUrl,
+          sessionId,
+          initialLang
+        });
       })
       .catch((err) => setError(err.message));
-  }, [sessionId, identity, displayName]);
+  }, [sessionId, identity, displayName, activeCall, initialLang, setActiveCall]);
 
   function handleLeave() {
-    router.push("/");
+    leaveCall();
   }
 
   if (error) {
@@ -121,27 +131,8 @@ export default function RoomClient({ sessionId }: { sessionId: string }) {
   }
 
   return (
-    <LiveKitRoom
-      token={token}
-      serverUrl={serverUrl}
-      // Camera + mic default OFF (grill Q12); user opts in via the control bar.
-      video={false}
-      audio={false}
-      connect={true}
-      onDisconnected={handleLeave}
-      data-lk-theme="default"
-      className="h-100vh bg-bg"
-    >
+    <div className="h-100vh bg-bg">
       <InCall initialLang={initialLang} onLeave={handleLeave} />
-      <RoomAudioRenderer />
-      {/* Browsers block audio playback until a user gesture. A listener whose
-          mic stays off never triggers that gesture, so inbound translation
-          audio would silently never play. StartAudio renders only while
-          playback is blocked and calls room.startAudio() on click. */}
-      <StartAudio
-        label="🔊 Tap to enable translated audio"
-        className="btn start-audio-fixed"
-      />
-    </LiveKitRoom>
+    </div>
   );
 }

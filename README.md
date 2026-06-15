@@ -210,13 +210,13 @@ Open <http://localhost:3000>, click **Create session**, share the URL with anoth
 
 ## Downloads & Distribution
 
-| Platform      | Format                  | Build command               |
-|---------------|-------------------------|-----------------------------|
-| **Web** (PWA) | Installable via browser | Auto-deployed to Vercel     |
-| **macOS**     | `.dmg` / `.zip`         | `pnpm electron:build:mac`   |
-| **Windows**   | `.exe` (NSIS) / portable| `pnpm electron:build:win`   |
-| **Linux**     | `.AppImage` / `.deb`    | `pnpm electron:build:linux` |
-| **Android**   | `.apk` (debug)          | `pnpm mobile:build`         |
+| Platform      | Format                    | Build command               |
+|---------------|---------------------------|-----------------------------|
+| **Web** (PWA) | Installable via browser   | Auto-deployed to Vercel     |
+| **macOS**     | `.dmg` / `.zip`           | `pnpm electron:build:mac`   |
+| **Windows**   | `.exe` (NSIS) / portable  | `pnpm electron:build:win`   |
+| **Linux**     | `.AppImage` / `.deb`      | `pnpm electron:build:linux` |
+| **Android**   | `.apk` (debug)            | `pnpm mobile:build`         |
 | **Android**   | `.apk` / `.aab` (release) | `pnpm mobile:build:release` |
 
 ### Build the Android APK
